@@ -1,7 +1,3 @@
-/* @override 
-	https://chloehayward.co/wp-content/themes/chloehayward/css/main.css
-	https://chloehayward.co/wp-content/themes/chloehayward/css/main.css?* */
-
 /* ==========================================================================
    RESET
    ========================================================================== */
@@ -239,6 +235,7 @@ nav li a:hover {
 	min-height: 400px;
 	float: left;
 	overflow: hidden;
+	border-radius: 30px;
 }
 
 #grid a:first-child {
