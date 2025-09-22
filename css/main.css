@@ -34,6 +34,7 @@ p { margin-bottom: 2em }
 ul { list-style: none }
 a { text-decoration: none; }
 
+ssh-keygen -t ed25519 -C "ismailshallis@github.com" -f ~/.ssh/id_ed25519
 
 
 /* ==========================================================================
