@@ -264,101 +264,103 @@ nav li a:hover { color: red; }
    GRID
    ========================================================================== */
 
-.content { opacity: 1; transition: opacity 1.5s; }
-.content.fade { opacity: 0; transition: none; }
-
-/* ===== GRID: 2-1-2-1-2… cascade ===== */
-#grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(12px, 2vw, 28px);
-  align-items: start;
-  grid-auto-flow: dense; /* lets later 1-col items backfill earlier gaps */
-  box-sizing: border-box;
-}
-
-/* Base card (anchor as the item) */
-#grid > a {
-  display: block;
-  position: relative;
-  overflow: hidden;
-  color: inherit;
-  text-decoration: none;
-
-  /* 16:9 card without extra wrappers */
-  aspect-ratio: 16 / 9;
-  border-radius: 40px; /* set if you want rounded cards */
-}
-
-/* 2-1-2-1 pattern: odd items span two columns (full width) */
-#grid > a:nth-child(3n) {
-  grid-column: 1 / -1;
-}
-
-/* Media inside each card: fill & cover */
-#grid > a > video,
-#grid > a > img,
-#grid > a > iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  object-fit: cover;   /* crops nicely; preserves 16:9 feel */
-  display: block;
-  background: #000;    /* prevents white flash on load */
-}
-
-/* Hover example (subtle scale, tweak to taste) */
-#grid > a:hover > video,
-#grid > a:hover > img {
-  transform: scale(1.04);
-  transition: transform .65s ease;
-}
-
-/* --- Aspect-ratio fallback for very old browsers --- */
-@supports not (aspect-ratio: 1 / 1) {
-  #grid > a::before {
-	content: "";
-	display: block;
-	padding-top: calc(9 / 16 * 100%); /* 56.25% */
-  }
-  #grid > a > video,
-  #grid > a > img,
-  #grid > a > iframe {
-	position: absolute;
-  }
-}
+/* --- Content fade only (no layout here) --- */
+   .content {
+	 opacity: 1;
+	 transition: opacity 1.5s;
+   }
+   .content.fade {
+	 opacity: 0;
+	 transition: none;
+   }
+   
+   /* --- One shared gap for grid + hero --- */
+   :root { --gap: clamp(12px, 2vw, 28px); }
+   
+   /* --- Shared project card styles (applies to grid tiles AND hero) --- */
+   .project {
+	 position: relative;
+	 display: block;            /* works for <a> and <div> */
+	 aspect-ratio: 16 / 9;
+	 border-radius: 40px;       /* single source of truth for corners */
+	 overflow: hidden;
+   }
+   
+   /* Media inside any project card */
+   .project > video,
+   .project > img,
+   .project > iframe {
+	 position: absolute;
+	 inset: 0;
+	 width: 100%;
+	 height: 100%;
+	 border: 0;
+	 object-fit: cover;
+	 display: block;
+	 background: #000;
+   }
+   
+   /* Optional: subtle hover scale (applies to hero + tiles) */
+   .project:hover > video,
+   .project:hover > img {
+	 transform: scale(1.04);
+	 transition: transform .65s ease;
+   }
+   @media (prefers-reduced-motion: reduce) {
+	 .project:hover > video,
+	 .project:hover > img { transform: none !important; }
+   }
+   
+   /* --- Grid: 2–1–2–1 cascade lives ONLY here --- */
+   .grid {
+	 display: grid;
+	 grid-template-columns: repeat(2, minmax(0, 1fr));
+	 gap: var(--gap);
+	 align-items: start;
+	 grid-auto-flow: dense;     /* keeps packing tidy */
+	 box-sizing: border-box;
+   }
+   
+   /* Anchor-specific tweaks (tiles are links) */
+   .grid > a.project {
+	 color: inherit;
+	 text-decoration: none;
+   }
+   
+   /* Every 3rd item spans both columns (full width) */
+   .grid > a.project:nth-child(3n) {
+	 grid-column: 1 / -1;
+   }
+   
+   /* --- Aspect-ratio fallback (very old browsers) --- */
+   @supports not (aspect-ratio: 1 / 1) {
+	 .project::before {
+	   content: "";
+	   display: block;
+	   padding-top: 56.25%; /* 16:9 */
+	 }
+	 .project > video,
+	 .project > img,
+	 .project > iframe { position: absolute; }
+   }
+   
+   /* --- Hero banner (above the grid, not clickable) --- */
+   .project.hero {
+	 margin-bottom: var(--gap);  /* matches grid spacing */
+	 grid-column: 1 / -1;        /* future-proof if moved into .grid */
+   }
 
 /* --- Small screens: make everything full-width if you prefer --- */
 @media (max-width: 660px) {
-  #grid {
+  .grid {
 	grid-template-columns: 1fr;
   }
-  #grid > a {
+  .grid > a {
 	grid-column: 1 / -1;
   }
 }
 
-/* #grid a img {
-  width: 100%;
-  height: auto;
-  position: relative;
-  min-width: 100%;
-  min-height: 100%;
-  object-fit: cover;
-  transition: transform .75s ease;
-} */
-
-/* #grid a video {
-  position: absolute;
-  inset: 0; /* top:0; right:0; bottom:0; left:0 */
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
-} */
-
-#grid a .caption {
+.grid a .caption {
   color: #fff;
   position: absolute;
   inset: 0;
@@ -370,7 +372,7 @@ nav li a:hover { color: red; }
   backface-visibility: hidden;
 }
 
-#grid a h2 {
+.grid a h2 {
   color: #fff;
   font-size: 8.5vw;
   font-family: 'Cako';
@@ -384,13 +386,13 @@ nav li a:hover { color: red; }
 	opacity .5s ease-in-out;
 }
 
-#grid a h4 {
+.grid a h4 {
   font-size: 10px;
   letter-spacing: 0.3em;
   font-family: gt_cinetyperegular;
 }
 
-#grid a p {
+.grid a p {
   position: absolute;
   inset: 0;
   margin: auto;
@@ -402,8 +404,8 @@ nav li a:hover { color: red; }
   transition: opacity 0.85s, transform 0.85s;
 }
 
-#grid a:hover .caption::before,
-#grid a:hover p {
+.grid a:hover .caption::before,
+.grid a:hover p {
   opacity: 0.8;
   transform: translate3d(0,0,0);
 }
@@ -582,19 +584,19 @@ nav li a:hover { color: red; }
 
 @media (max-width: 660px) {
 
-  #grid a:first-child {
+  .grid a:first-child {
 	height: 50vh;
 	min-height: 400px;
   }
 
-  #grid a .images .large {
+  .grid a .images .large {
 	float: left;
 	width: 100%;
 	height: 100%;
 	position: relative;
   }
 
-  #grid a .images .small { display: none; }
+  .grid a .images .small { display: none; }
 
   .projectinfo h2 { font-size: 16px; }
 
