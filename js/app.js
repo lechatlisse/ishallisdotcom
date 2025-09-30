@@ -1,105 +1,115 @@
 /* global Lenis */
 
-// -------- Smooth scroll (Lenis) --------
+// ---- Lenis (smooth scroll) ----
 const lenis = new Lenis();
 function raf(t){ lenis.raf(t); requestAnimationFrame(raf); }
 requestAnimationFrame(raf);
 
-// -------- Video init + performance --------
+// ---- Progress bar helpers (optional) ----
+const progressEl = document.getElementById('progress');
+let progress = 0;
+const setProgress = p => {
+  if (!progressEl) return;
+  progress = Math.max(progress, Math.min(p, 1));
+  progressEl.style.setProperty('--progress', String(progress));
+};
+const finishProgress = () => {
+  if (!progressEl) return;
+  setProgress(1);
+  progressEl.classList.add('done');
+  setTimeout(() => progressEl.remove(), 600);
+};
+
+// ---- Utils ----
+const inViewport = (el, margin = 0) => {
+  const r = el.getBoundingClientRect();
+  return r.top < (innerHeight + margin) && r.bottom > (0 - margin) &&
+		 r.left < (innerWidth + margin) && r.right > (0 - margin);
+};
+const once = (el, type) => new Promise(res => el.addEventListener(type, res, { once: true }));
+
+// ---- Main ----
 function initVideos() {
   const content   = document.querySelector('.content');
   const hero      = document.querySelector('.project.hero video');
-  const tileNodes = document.querySelectorAll('.grid .project video');
-  const tiles     = Array.from(tileNodes);
+  const tiles     = Array.from(document.querySelectorAll('.grid .project video'));
   const allVideos = [...(hero ? [hero] : []), ...tiles];
 
-  // Configure attributes (lightweight for tiles; eager for hero)
+  // Milestone: DOM parsed
+  setProgress(0.15);
+
+  // Mobile autoplay requirements
   allVideos.forEach(v => {
-	v.muted = true;
-	v.loop = true;
-	v.playsInline = true;
-	v.setAttribute('playsinline','');
-	v.setAttribute('webkit-playsinline','');
+	v.muted = true; v.loop = true; v.playsInline = true;
+	v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
 	v.setAttribute('crossorigin','anonymous');
   });
-  if (hero) {
-	hero.setAttribute('preload','auto');
-	hero.setAttribute('autoplay','');
+  if (hero) { hero.setAttribute('preload','auto'); hero.setAttribute('autoplay',''); }
+  tiles.forEach(v => { v.setAttribute('preload','metadata'); v.removeAttribute('autoplay'); });
+
+  // First-paint milestone: when hero (or first video) has first frame data
+  const firstRenderable = hero || allVideos[0];
+  if (firstRenderable) {
+	(firstRenderable.readyState >= 2)
+	  ? setProgress(0.55)
+	  : firstRenderable.addEventListener('loadeddata', () => setProgress(0.55), { once: true });
+  } else {
+	setProgress(0.55);
   }
-  tiles.forEach(v => {
-	// keep tiles light until they’re in view
-	v.setAttribute('preload','metadata');
-	v.removeAttribute('autoplay');
+
+  // GLOBAL reveal gate: wait for tiles near/in viewport to be “ready”
+  const marginPx = 120;
+  const projectsInView = Array.from(document.querySelectorAll('.project'))
+	.filter(p => inViewport(p, marginPx));
+
+  const perProjectReady = projectsInView.map(p => {
+	const v = p.querySelector('video');
+	if (!v) return Promise.resolve();
+
+	const loaded  = (v.readyState >= 2) ? Promise.resolve() : once(v, 'loadeddata');
+	const playing = new Promise(res => v.addEventListener('playing', res, { once: true }));
+
+	return Promise.race([loaded, playing]).then(() => {
+	  const base = Math.max(progress, 0.55);
+	  const target = Math.min(0.9, base + 0.12);
+	  setProgress(target);
+	});
   });
 
-  // Reveal content when the first primary video is ready (hero preferred)
-  let revealed = false;
-  const reveal = () => {
-	if (!revealed && content) {
-	  content.classList.remove('fade');
-	  revealed = true;
-	}
-  };
-  const first = hero || allVideos[0];
-  if (first) {
-	(first.readyState >= 2) ? reveal()
-	  : first.addEventListener('loadeddata', reveal, { once: true });
-  } else {
-	reveal();
-  }
-  // Safety reveal in case of slow networks
-  setTimeout(reveal, 1500);
+  const cap = new Promise(res => setTimeout(res, 1600)); // safety cap
+  Promise.race([ Promise.all(perProjectReady), cap ]).then(() => {
+	content && content.classList.remove('fade');
+	window.addEventListener('load', finishProgress);
+	setTimeout(() => { if (progress < 0.9) setProgress(0.9); }, 600);
+	setTimeout(() => { if (progress < 1) finishProgress(); }, 1800);
+  });
 
-  // Respect user preference: Reduce Motion = no autoplay
-  const prefersReduce = window.matchMedia &&
-						window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (prefersReduce) {
-	allVideos.forEach(v => { v.pause(); v.removeAttribute('autoplay'); });
-	return; // bail out of autoplay/observer entirely
-  }
-
-  // IntersectionObserver: play when ~25% visible, pause otherwise
-  const canIO = 'IntersectionObserver' in window;
-  if (canIO) {
+  // Play/pause based on viewport (battery/perf)
+  if ('IntersectionObserver' in window) {
 	const io = new IntersectionObserver((entries) => {
-	  entries.forEach((entry) => {
-		const v = entry.target;
-		if (entry.isIntersecting && entry.intersectionRatio >= 0.25) {
-		  const p = v.play();
-		  if (p && p.catch) p.catch(() => {});
+	  entries.forEach(({ target: v, isIntersecting, intersectionRatio }) => {
+		if (isIntersecting && intersectionRatio >= 0.25) {
+		  const p = v.play(); if (p && p.catch) p.catch(() => {});
 		} else {
-		  v.pause();
+		  try { v.pause(); } catch {}
 		}
 	  });
-	}, {
-	  root: null,
-	  rootMargin: '200px 0px 300px 0px', // pre-warm before/after viewport
-	  threshold: [0, 0.25, 0.5, 1]
-	});
+	}, { root: null, rootMargin: '200px 0px 300px 0px', threshold: [0, 0.25] });
 
 	allVideos.forEach(v => io.observe(v));
   } else {
-	// Fallback: play hero (if present), pause others
-	if (hero) {
-	  hero.play().catch(() => {});
-	  tiles.forEach(v => v.pause());
-	} else if (allVideos[0]) {
-	  allVideos[0].play().catch(() => {});
-	  allVideos.slice(1).forEach(v => v.pause());
-	}
+	(hero || allVideos[0])?.play()?.catch(()=>{});
   }
 
-  // Page Visibility: pause all when tab hidden; resume visible ones on show
+  // Pause all when tab hidden; resume visible on show
   document.addEventListener('visibilitychange', () => {
 	if (document.hidden) {
 	  allVideos.forEach(v => v.pause());
 	} else {
 	  allVideos.forEach(v => {
 		const r = v.getBoundingClientRect();
-		const visible = r.top < innerHeight && r.bottom > 0 && r.left < innerWidth && r.right > 0;
-		if (visible) {
-		  const p = v.play();
-		  if (p && p.catch) p.catch(() => {});
+		if (r.top < innerHeight && r.bottom > 0 && r.left < innerWidth && r.right > 0) {
+		  const p = v.play(); if (p && p.catch) p.catch(()=>{});
 		}
 	  });
 	}

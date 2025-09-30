@@ -58,24 +58,6 @@ a:focus-visible {
 ::selection { background: #000; color: #fff; text-shadow: none; }
 
 
-/* 6) Reduced motion & large sections perf
-   -------------------------------------------------- */
-@media (prefers-reduced-motion: reduce) {
-  * {
-	animation-duration: 0.001ms !important;
-	animation-iteration-count: 1 !important;
-	transition-duration: 0.001ms !important;
-	scroll-behavior: auto !important;
-  }
-}
-
-/* If you have long pages with distinct sections, this helps first paint */
-.section {
-  content-visibility: auto;
-  contain-intrinsic-size: 800px; /* adjust to your typical section height */
-}
-
-
 /* 7) Utilities you’ll actually use
    -------------------------------------------------- */
 .wrapper { max-width: 72rem; margin-inline: auto; padding-inline: clamp(.75rem, 1.5vw, 1.25rem); }
@@ -173,7 +155,7 @@ img { max-width: 100%; vertical-align: middle; image-rendering: -webkit-optimize
 } */
 
 /* ===== Top progress bar (GPU-friendly) ===== */
-:root { --progress: 0; --progress-height: 3px; --progress-color: #fff; }
+:root { --progress: 0; --progress-height: 3px; --progress-color: red; }
 
 #progress {
   position: fixed; top: 0; left: 0; right: 0;
@@ -190,11 +172,6 @@ img { max-width: 100%; vertical-align: middle; image-rendering: -webkit-optimize
   transition: transform .25s ease, opacity .35s ease .2s;
 }
 #progress.done { opacity: 0; }
-
-/* Respect reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  #progress::before { transition: none; }
-}
 
 .container {
   overflow: hidden;
@@ -313,17 +290,6 @@ nav li a:hover { color: red; }
 	 object-fit: cover;
 	 display: block;
 	 background: #000;
-   }
-   
-   /* Optional: subtle hover scale (applies to hero + tiles) */
-   .project:hover > video,
-   .project:hover > img {
-	 transform: scale(1.04);
-	 transition: transform .65s ease;
-   }
-   @media (prefers-reduced-motion: reduce) {
-	 .project:hover > video,
-	 .project:hover > img { transform: none !important; }
    }
    
    /* --- Grid: 2–1–2–1 cascade lives ONLY here --- */
@@ -598,20 +564,6 @@ nav li a:hover { color: red; }
    ========================================================================== */
 
 @media (max-width: 660px) {
-
-  .grid a:first-child {
-	height: 50vh;
-	min-height: 400px;
-  }
-
-  .grid a .images .large {
-	float: left;
-	width: 100%;
-	height: 100%;
-	position: relative;
-  }
-
-  .grid a .images .small { display: none; }
 
   .projectinfo h2 { font-size: 16px; }
 
