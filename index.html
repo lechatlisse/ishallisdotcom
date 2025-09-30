@@ -2,8 +2,6 @@
 <html class="no-js page-archive page-work" lang="en">
 <head>
   <meta charset="utf-8">
-
-  <!-- Single, a11y-friendly viewport -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>Ismail Shallis — Work</title>
@@ -18,10 +16,9 @@
   <!-- Speed up video start -->
   <link rel="preconnect" href="https://player.vimeo.com" crossorigin>
   <link rel="dns-prefetch" href="//player.vimeo.com">
-  <!-- Optional: many Vimeo progressive MP4s come from Akamai -->
   <link rel="preconnect" href="https://vod-progressive.akamaized.net" crossorigin>
 
-  <!-- Preload first hero video (keep if it’s truly above the fold) -->
+  <!-- Preload first hero video (keep if it's above the fold) -->
   <link rel="preload" as="video"
 		href="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
 		type="video/mp4" crossorigin>
@@ -33,196 +30,123 @@
   <meta property="og:title" content="Ismail Shallis — Work">
   <meta property="og:description" content="Selected work by director Ismail Shallis.">
   <meta property="og:image" content="https://lechatlisse.github.io/ishallisdotcom/img/og-cover.jpg">
-
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Ismail Shallis — Work">
   <meta name="twitter:description" content="Selected work by director Ismail Shallis.">
   <meta name="twitter:image" content="https://lechatlisse.github.io/ishallisdotcom/img/og-cover.jpg">
 
-  <!-- Icons (drop in files when ready) -->
+  <!-- Icons (optional; add files when ready) -->
   <link rel="icon" href="/ishallisdotcom/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/ishallisdotcom/favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="/ishallisdotcom/apple-touch-icon.png">
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="css/normalize.css">
+  <!-- CSS (normalize once, then your styles) -->
+  <link rel="stylesheet" href="css/modern-normalize.min.css">
   <link rel="stylesheet" href="css/main.css">
 
-  <!-- JS (non-blocking) -->
+  <!-- Lenis in head (as you require) -->
   <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1/bundled/lenis.min.js"></script>
 </head>
-
 <body>
+	
+<div id="progress" aria-hidden="true"></div>
 
 <div class="container">
-
-<header>
-<h1><a href="index.html">Ismail Shallis Latest</a></h1>
-<nav>
-	<ul>
-		<li class="nav-insta"><a href="https://www.instagram.com/chloeahayward/" target="_blank" rel="noopener"><img decoding=async data-opt-id=1056742608  fetchpriority="high" src="https://ml2glajleasn.i.optimole.com/cb:K65u.30e7b/w:auto/h:auto/q:mauto/f:best/ig:avif/https://chloehayward.co/wp-content/themes/chloehayward/img/instagram.svg" alt="Instagram"/></a></li>
+  <header>
+	<h1><a href="index.html">Ismail Shallis Latest</a></h1>
+	<nav>
+	  <ul>
+		<li class="nav-insta">
+		  <a href="https://www.instagram.com/chloeahayward/" target="_blank" rel="noopener">
+			<img decoding="async" alt="Instagram"
+				 src="https://ml2glajleasn.i.optimole.com/cb:K65u.30e7b/w:auto/h:auto/q:mauto/f:best/ig:avif/https://chloehayward.co/wp-content/themes/chloehayward/img/instagram.svg">
+		  </a>
+		</li>
 		<li class="nav-info"><a href="info/index.html">Info</a></li>
-	</ul>
-</nav>
-</header>
+	  </ul>
+	</nav>
+  </header>
 
-<div class="content fade">
-	
+  <div class="content fade">
+
+	<!-- HERO (not clickable) -->
 	<div class="project hero">
 	  <video muted loop autoplay playsinline preload="auto" crossorigin="anonymous">
 		<source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
 	  </video>
+	  <img class="fallback" src="img/hero-fallback.jpg" alt="">
 	</div>
 
-<div class="grid">
+	<!-- GRID -->
+	<div class="grid">
+	  <a href="" class="project">
+		<video muted loop autoplay playsinline preload="metadata" crossorigin="anonymous">
+		  <source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
+		</video>
+		<img class="fallback" src="img/tile-01-fallback.jpg" alt="">
+	  </a>
 
-<a href="" class="project">
+	  <a href="" class="project">
+		<video muted loop autoplay playsinline preload="metadata" crossorigin="anonymous">
+		  <source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
+		</video>
+		<img class="fallback" src="img/tile-01-fallback.jpg" alt="">
+	  </a>
 
-<video muted loop autoplay playsinline preload="auto" crossorigin="anonymous">
-  <source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
-</video>
+	  <a href="" class="project">
+		<video muted loop autoplay playsinline preload="metadata" crossorigin="anonymous">
+		  <source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
+		</video>
+		<img class="fallback" src="img/tile-01-fallback.jpg" alt="">
+	  </a>
 
-<!-- <div class="caption">
-<div class="text">
-<h2>FACES</h2>
-</div>
-</div> -->
+	  <a href="" class="project">
+		<video muted loop autoplay playsinline preload="metadata" crossorigin="anonymous">
+		  <source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
+		</video>
+		<img class="fallback" src="img/tile-01-fallback.jpg" alt="">
+	  </a>
 
-</a>
+	  <a href="" class="project">
+		<video muted loop autoplay playsinline preload="metadata" crossorigin="anonymous">
+		  <source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
+		</video>
+		<img class="fallback" src="img/tile-01-fallback.jpg" alt="">
+	  </a>
+	  
+	  <a href="" class="project">
+		  <video muted loop autoplay playsinline preload="metadata" crossorigin="anonymous">
+			<source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
+		  </video>
+		  <img class="fallback" src="img/tile-01-fallback.jpg" alt="">
+		</a>
+		
+		<a href="" class="project">
+			<video muted loop autoplay playsinline preload="metadata" crossorigin="anonymous">
+			  <source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
+			</video>
+			<img class="fallback" src="img/tile-01-fallback.jpg" alt="">
+		</a>
+		  
+		<a href="" class="project">
+			<video muted loop autoplay playsinline preload="metadata" crossorigin="anonymous">
+				<source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
+			</video>
+			<img class="fallback" src="img/tile-01-fallback.jpg" alt="">
+		</a>
+			
+		<a href="" class="project">
+			<video muted loop autoplay playsinline preload="metadata" crossorigin="anonymous">
+			  <source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
+			</video>
+			<img class="fallback" src="img/tile-01-fallback.jpg" alt="">
+		</a>
+	</div><!-- .grid -->
 
-<a href="" class="project">
+  </div><!-- .content -->
+</div><!-- .container -->
 
-<video muted loop autoplay playsinline preload="auto" crossorigin="anonymous">
-  <source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
-</video>
-
-<!-- <div class="caption">
-<div class="text">
-<h2>FACES</h2>
-</div>
-</div> -->
-
-</a>
-
-<a href="" class="project">
-
-<video muted loop autoplay playsinline preload="auto" crossorigin="anonymous">
-  <source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
-</video>
-
-<!-- <div class="caption">
-<div class="text">
-<h2>FACES</h2>
-</div>
-</div> -->
-
-</a>
-
-<a href="" class="project">
-
-<video muted loop autoplay playsinline preload="auto" crossorigin="anonymous">
-  <source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
-</video>
-
-<!-- <div class="caption">
-<div class="text">
-<h2>FACES</h2>
-</div>
-</div> -->
-
-</a>
-
-<a href="" class="project">
-
-<video muted loop autoplay playsinline preload="auto" crossorigin="anonymous">
-  <source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
-</video>
-
-<!-- <div class="caption">
-<div class="text">
-<h2>FACES</h2>
-</div>
-</div> -->
-
-</a>
-
-
-
-
-
-</div><!--grid-->
-
-</div><!--content-->
-
-</div><!--container-->
-
-<script   src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script>window.jQuery || document.write('<script src="https://chloehayward.co/wp-content/themes/chloehayward/js/jquery-3.7.0.min.js"><\/script>')</script>
-<script src="js/pace.min.js" defer></script>
-<script src="js/imagesloaded.pkgd.min.js" defer></script>
-<script src="js/jquery.fitvids.js" defer></script>
-<script src="wjs/ukiyo.min.js" defer></script>
-
-<script>
-//LENIS
-const lenis = new Lenis()
-
-lenis.on('scroll', (e) => {
-  console.log(e)
-})
-
-function raf(time) {
-  lenis.raf(time)
-  requestAnimationFrame(raf)
-}
-
-requestAnimationFrame(raf)
-
-//UKIYO
-const parallax = document.querySelectorAll('.images')
-
-new Ukiyo(parallax, {
-    scale: 1.1,
-    speed: 1.3,
-    wrapperClass: "ukiyo-wrapper",
-})
-</script>
-
-<script>
-$(document).ready(function(){
-
-$('.content').imagesLoaded( function() {
-	$('.content').removeClass('fade');
-});
-
-$('a.project').each(function () {
-	const $a = $(this);
-	const $video = $a.find('video');
-	const $img = $a.find('img');
-
-	if (!$video.length) return;
-	const v = $video.get(0);
-
-	// Ensure the right flags for autoplay everywhere
-	v.muted = true;
-	v.loop = true;
-	v.playsInline = true;                 // iOS Safari (JS property)
-	$video.attr({'autoplay':'', 'preload':'auto', 'playsinline':'', 'webkit-playsinline':''});
-
-	// Hide the poster image once the video is ready
-	const start = () => {
-	  $img.stop(true, true).fadeOut(120);
-	  const p = v.play();
-	  if (p && p.catch) p.catch(()=>{/* ignore autoplay race */});
-	};
-
-	// Try immediately; also start when data is ready
-	start();
-	v.addEventListener('loadeddata', start, { once: true });
-  });
-
-});
-</script>
-
+<!-- One small, modern JS file for everything -->
+<script src="js/app.js" defer></script>
 </body>
 </html>
