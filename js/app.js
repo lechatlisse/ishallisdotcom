@@ -131,151 +131,155 @@ document.addEventListener('touchstart', (e) => {
   if (e.target.closest('a.project')) warmOnce();
 }, { passive: true, once: true });
 
-/* ===== Route-aware modal: unmuted-first + reliable slide/fade animations ===== */
+/* ===== Route-aware modal: no animations ===== */
 (() => {
   const modal = document.getElementById('player-modal');
   if (!modal) return;
 
-  const panel    = modal.querySelector('.modal-panel');  // animated wrapper
-  const wrap     = modal.querySelector('.player-wrap');  // iframe container
+  const wrap = modal.querySelector('.player-wrap');
   const closeBtn = modal.querySelector('.modal-close');
 
   let lastFocus = null;
   let openedFromURL = location.href;
   let savedScrollY = 0;
   let savedScrollRestoration = 'auto';
-  const TRANSITION_MS = 350;
 
-  function getScrollbarWidth(){ return window.innerWidth - document.documentElement.clientWidth; }
+  function getScrollbarWidth() {
+	return window.innerWidth - document.documentElement.clientWidth;
+  }
 
-  function lockScroll(){
+  function lockScroll() {
 	savedScrollY = window.scrollY || 0;
-
 	if (typeof lenis !== 'undefined' && lenis.stop) lenis.stop();
 	savedScrollRestoration = history.scrollRestoration || 'auto';
 	if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
 	const sw = getScrollbarWidth();
 	Object.assign(document.body.style, {
-	  position:'fixed', top:`-${savedScrollY}px`, left:'0', right:'0', width:'100%',
-	  paddingRight: sw>0 ? `${sw}px` : ''
+	  position: 'fixed',
+	  top: `-${savedScrollY}px`,
+	  left: '0',
+	  right: '0',
+	  width: '100%',
+	  paddingRight: sw > 0 ? `${sw}px` : ''
 	});
 
 	document.documentElement.classList.add('modal-open');
 	document.body.classList.add('modal-open');
   }
 
-  function unlockScroll(){
-	Object.assign(document.body.style, { position:'', top:'', left:'', right:'', width:'', paddingRight:'' });
+  function unlockScroll() {
+	Object.assign(document.body.style, {
+	  position: '',
+	  top: '',
+	  left: '',
+	  right: '',
+	  width: '',
+	  paddingRight: ''
+	});
 	document.documentElement.classList.remove('modal-open');
 	document.body.classList.remove('modal-open');
 
-	// restore scroll, then sync & resume Lenis
 	window.scrollTo(0, savedScrollY);
 	if (typeof lenis !== 'undefined' && lenis.start) {
-	  requestAnimationFrame(()=>{ if (lenis.scrollTo) lenis.scrollTo(savedScrollY, { immediate:true }); lenis.start(); });
+	  requestAnimationFrame(() => {
+		if (lenis.scrollTo) lenis.scrollTo(savedScrollY, { immediate: true });
+		lenis.start();
+	  });
 	}
-	if ('scrollRestoration' in history) history.scrollRestoration = savedScrollRestoration;
+	if ('scrollRestoration' in history) {
+	  history.scrollRestoration = savedScrollRestoration;
+	}
   }
 
-  function openModal(url, vimeoId, title, invoker){
+  function openModal(url, vimeoId, title, invoker) {
 	lastFocus = invoker || document.activeElement;
 	openedFromURL = location.href;
-	history.pushState({ modal:true }, '', url);
+	history.pushState({ modal: true }, '', url);
 
-	// Build iframe immediately so network starts now
 	const qs = new URLSearchParams({
-	  autoplay:'1', muted:'0', playsinline:'1', dnt:'1',
-	  byline:'0', title:'0', portrait:'0', pip:'1'
+	  autoplay: '1',
+	  muted: '0',
+	  playsinline: '1',
+	  dnt: '1',
+	  byline: '0',
+	  title: '0',
+	  portrait: '0',
+	  pip: '1'
 	}).toString();
 
 	wrap.innerHTML = `
 	  <iframe src="https://player.vimeo.com/video/${vimeoId}?${qs}"
 			  allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
 			  allowfullscreen title="${title}" loading="eager"></iframe>
-	  <button class="tap-to-play" hidden><span>▶︎&nbsp; Play with sound</span></button>`;
+	  <button class="tap-to-play" hidden><span>▶️ Play with sound</span></button>`;
 
 	const iframe = wrap.querySelector('iframe');
-	const tap    = wrap.querySelector('.tap-to-play');
+	const tap = wrap.querySelector('.tap-to-play');
 
 	lockScroll();
 	modal.showModal();
+	closeBtn.focus({ preventScroll: true });
 
-	// ---- Animation IN (reliable in Chrome): double RAF ensures start state is painted ----
-	modal.classList.remove('anim-out');
-	requestAnimationFrame(() => {
-	  requestAnimationFrame(() => {
-		modal.classList.add('anim-in');
-		closeBtn.focus({ preventScroll:true });
-	  });
-	});
-
-	// Attach Vimeo API to already-loading iframe
-	loadVimeoAPI().then(()=>{
+	loadVimeoAPI().then(() => {
 	  const player = new Vimeo.Player(iframe);
 	  Promise.resolve()
-		.then(()=>player.setVolume(1))
-		.then(()=>player.play())
-		.catch(()=>{
+		.then(() => player.setVolume(1))
+		.then(() => player.play())
+		.catch(() => {
 		  tap.hidden = false;
-		  tap.addEventListener('click', ()=>{ tap.hidden = true; player.play(); }, { once:true });
+		  tap.addEventListener('click', () => {
+			tap.hidden = true;
+			player.play();
+		  }, { once: true });
 		});
 	  wrap._player = player;
 	});
   }
 
-  function closeModal({ viaHistory=false } = {}){
-	// ---- Animation OUT: remove IN first, then add OUT on next frame ----
-	modal.classList.remove('anim-in');
-	requestAnimationFrame(() => modal.classList.add('anim-out'));
+  function closeModal({ viaHistory = false } = {}) {
+	if (!modal.open) return;
 
-	const finish = () => {
-	  if (wrap._player && wrap._player.unload) wrap._player.unload().catch(()=>{});
-	  wrap.innerHTML = '';
+	if (wrap._player && wrap._player.unload) {
+	  wrap._player.unload().catch(() => {});
+	}
+	wrap.innerHTML = '';
 
-	  if (modal.open) modal.close();
+	modal.close();
 
-	  // On manual close, revert URL without navigation
-	  if (!viaHistory && history.state?.modal) {
-		history.replaceState(null, '', openedFromURL);
-	  }
+	if (!viaHistory && history.state?.modal) {
+	  history.replaceState(null, '', openedFromURL);
+	}
 
-	  unlockScroll();
+	unlockScroll();
 
-	  if (lastFocus && lastFocus.focus) {
-		try { lastFocus.focus({ preventScroll:true }); } catch {}
-	  }
-	  modal.classList.remove('anim-out');
-	};
-
-	// Wait for transition end (panel), fallback to timeout
-	const onEnd = (e) => {
-	  if (e && e.target !== panel) return;
-	  panel && panel.removeEventListener('transitionend', onEnd);
-	  finish();
-	};
-	panel && panel.addEventListener('transitionend', onEnd);
-	setTimeout(()=>{ panel && panel.removeEventListener('transitionend', onEnd); finish(); }, TRANSITION_MS + 60);
+	if (lastFocus && lastFocus.focus) {
+	  try {
+		lastFocus.focus({ preventScroll: true });
+	  } catch {}
+	}
   }
 
-  // Enhance tile clicks (only if data-vimeo present)
-  document.addEventListener('click', (e)=>{
+  document.addEventListener('click', (e) => {
 	const a = e.target.closest('a.project');
 	if (!a) return;
 	const id = a.dataset.vimeo;
-	if (!id) return; // no enhancement → normal nav
+	if (!id) return;
 	e.preventDefault();
-	const href  = a.getAttribute('href');
-	const title = a.getAttribute('aria-label') || a.querySelector('.title')?.textContent || 'Video';
+	const href = a.getAttribute('href');
+	const title =
+	  a.getAttribute('aria-label') ||
+	  a.querySelector('.title')?.textContent ||
+	  'Video';
 	openModal(href, id, title, a);
   });
 
-  // Button / ESC close → manual
-  closeBtn.addEventListener('click', ()=> closeModal({ viaHistory:false }));
-  modal.addEventListener('cancel', (e)=>{ e.preventDefault(); closeModal({ viaHistory:false }); });
-
-  // Back button → user navigated history: close but don’t alter history again
-  window.addEventListener('popstate', ()=>{
-	if (modal.open) closeModal({ viaHistory:true });
+  closeBtn.addEventListener('click', () => closeModal({ viaHistory: false }));
+  modal.addEventListener('cancel', (e) => {
+	e.preventDefault();
+	closeModal({ viaHistory: false });
+  });
+  window.addEventListener('popstate', () => {
+	if (modal.open) closeModal({ viaHistory: true });
   });
 })();
