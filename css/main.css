@@ -398,7 +398,52 @@ nav li a:hover { color: red; }
    VIDEO PAGE
    ========================================================================== */
 
-.page-single .container {
+/* ===== Route-aware modal ===== */
+   #player-modal{border:0;padding:0;background:transparent;inset:0;width:100vw;height:100dvh}
+   #player-modal::backdrop{background:rgba(0,0,0,.85);transition:opacity .2s ease}
+   #player-modal[open]::backdrop{opacity:1}
+   #player-modal .player-wrap{position:fixed;inset:0;background:#000}
+   
+   /* Fill + center video (cover) for iframes */
+   #player-modal .player-wrap iframe{
+     position:absolute;top:50%;left:50%;
+     width:max(100vw,calc(100dvh*16/9));
+     height:max(100dvh,calc(100vw*9/16));
+     transform:translate(-50%,-50%);
+     border:0
+   }
+   
+   /* Close button */
+   #player-modal .modal-close{
+     position:fixed;top:16px;right:16px;z-index:2;
+     width:40px;height:40px;border:0;border-radius:999px;
+     background:rgba(0,0,0,.5);color:#fff;font-size:20px;cursor:pointer;
+     line-height:40px;text-align:center;backdrop-filter:blur(6px)
+   }
+   
+   /* Lock scroll when modal is open */
+   html.modal-open,body.modal-open{overflow:hidden}
+   
+   /* CTA overlay shown only if autoplay with sound is blocked */
+   .tap-to-play{
+     position:fixed;inset:0;display:grid;place-items:center;
+     background:radial-gradient(transparent 60%,rgba(0,0,0,.55));
+     color:#fff;border:0;cursor:pointer;
+     font-size:clamp(1rem,2.2vw + .6rem,1.6rem);font-weight:700;letter-spacing:.02em
+   }
+   .tap-to-play>span{
+     display:inline-flex;align-items:center;gap:.6em;
+     padding:.9em 1.2em;border-radius:999px;
+     background:rgba(0,0,0,.55);backdrop-filter:blur(6px)
+   }
+   .tap-to-play[hidden]{display:none}
+   
+   /* Standalone project page iframe sizing */
+   .project-page .video-embed{position:relative;aspect-ratio:16/9;background:#000}
+   .project-page .video-embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+
+
+/* .page-single .container {
   width: 100%;
   height: 100%;
   display: flex;
@@ -476,7 +521,7 @@ nav li a:hover { color: red; }
   transition: color 0.25s linear, transform 0.25s linear;
 }
 
-.previous a:hover, .next a:hover { color: red; }
+.previous a:hover, .next a:hover { color: red; } */
 
 
 /* ==========================================================================
