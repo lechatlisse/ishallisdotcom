@@ -398,49 +398,74 @@ nav li a:hover { color: red; }
    VIDEO PAGE
    ========================================================================== */
 
-/* ===== Route-aware modal ===== */
+/* ===== Route-aware modal (dialog + animated panel) ===== */
    #player-modal{border:0;padding:0;background:transparent;inset:0;width:100vw;height:100dvh}
-   #player-modal::backdrop{background:rgba(0,0,0,.85);transition:opacity .2s ease}
+   #player-modal::backdrop{background:rgba(0,0,0,.85);transition:opacity .35s ease}
    #player-modal[open]::backdrop{opacity:1}
-   #player-modal .player-wrap{position:fixed;inset:0;background:#000}
    
-   /* Fill + center video (cover) for iframes */
+   /* Panel animates in/out */
+   #player-modal .modal-panel{
+     position:fixed; inset:0;
+     opacity:0;
+     transform: translate3d(0, 6%, 0);        /* was translateY(6%) */
+     transition: transform .35s cubic-bezier(.2,.9,.2,1), opacity .35s ease;
+     will-change: transform, opacity;
+     contain: paint;                           /* isolate layer → fewer flashes */
+   }
+   #player-modal.anim-in .modal-panel{ opacity:1; transform:translateY(0) }
+   #player-modal.anim-out .modal-panel{ opacity:0; transform:translateY(4%) }
+   #player-modal.anim-out::backdrop{ opacity:0 }
+   
+   /* Player area fills panel */
+   #player-modal .player-wrap{ position:absolute; inset:0; background:#000; contain:paint; }
+   
+   /* Cover-sized Vimeo iframe in modal (centered, may crop) */
    #player-modal .player-wrap iframe{
-     position:absolute;top:50%;left:50%;
+     position:absolute; top:50%; left:50%;
      width:max(100vw,calc(100dvh*16/9));
      height:max(100dvh,calc(100vw*9/16));
      transform:translate(-50%,-50%);
-     border:0
+     border:0;
    }
    
-   /* Close button */
+   /* Close button rides with the panel */
    #player-modal .modal-close{
-     position:fixed;top:16px;right:16px;z-index:2;
-     width:40px;height:40px;border:0;border-radius:999px;
-     background:rgba(0,0,0,.5);color:#fff;font-size:20px;cursor:pointer;
-     line-height:40px;text-align:center;backdrop-filter:blur(6px)
+     position:absolute; top:16px; right:16px; z-index:2;
+     width:40px; height:40px; line-height:40px; text-align:center;
+     border:0; border-radius:999px; cursor:pointer;
+     background:rgba(0,0,0,.5); color:#fff; font-size:20px;
+     backdrop-filter:blur(6px);
    }
    
-   /* Lock scroll when modal is open */
-   html.modal-open,body.modal-open{overflow:hidden}
+   /* Lock page scroll when modal is open */
+   html.modal-open, body.modal-open{ overflow:hidden }
+   html.modal-open header { mix-blend-mode: normal; }
    
-   /* CTA overlay shown only if autoplay with sound is blocked */
+   /* CTA overlay (shown only if autoplay-with-sound is blocked) */
    .tap-to-play{
-     position:fixed;inset:0;display:grid;place-items:center;
+     position:fixed; inset:0; display:grid; place-items:center;
      background:radial-gradient(transparent 60%,rgba(0,0,0,.55));
-     color:#fff;border:0;cursor:pointer;
-     font-size:clamp(1rem,2.2vw + .6rem,1.6rem);font-weight:700;letter-spacing:.02em
+     color:#fff; border:0; cursor:pointer;
+     font-size:clamp(1rem,2.2vw + .6rem,1.6rem); font-weight:700; letter-spacing:.02em;
    }
    .tap-to-play>span{
-     display:inline-flex;align-items:center;gap:.6em;
-     padding:.9em 1.2em;border-radius:999px;
-     background:rgba(0,0,0,.55);backdrop-filter:blur(6px)
+     display:inline-flex; align-items:center; gap:.6em;
+     padding:.9em 1.2em; border-radius:999px;
+     background:rgba(0,0,0,.55); backdrop-filter:blur(6px);
    }
-   .tap-to-play[hidden]{display:none}
+   .tap-to-play[hidden]{ display:none }
    
-   /* Standalone project page iframe sizing */
-   .project-page .video-embed{position:relative;aspect-ratio:16/9;background:#000}
-   .project-page .video-embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+   /* ===== Standalone project page embed (fixed 16:9, no crop) ===== */
+   .project-page .video-embed{
+     position:relative;
+     aspect-ratio:16/9;
+     background:#000;           /* prevents white flash */
+   }
+   .project-page .video-embed iframe{
+     position:absolute; inset:0;
+     width:100%; height:100%;
+     border:0;
+   }
 
 
 /* .page-single .container {
