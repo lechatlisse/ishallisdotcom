@@ -1,9 +1,9 @@
 /* 1) Box sizing + core document defaults
    -------------------------------------------------- */
 *, *::before, *::after { box-sizing: border-box; }
-
-html:focus-within { scroll-behavior: smooth; } /* optional */
+html { scroll-behavior: auto; }          /* let Lenis be the only smoother */
 html, body { height: 100%; } /* avoids odd 100vh issues on iOS */
+html, body { overscroll-behavior: none; } /* block scroll chaining under modal */
 body {
   margin: 0;
   font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue",

@@ -114,44 +114,138 @@ function loadVimeoAPI(){
   });
 }
 
-/* ===== Route-aware modal with UNMUTED-first autoplay + one-tap fallback ===== */
-(()=>{
-  const modal = document.getElementById('player-modal');
-  if(!modal) return;
-  const wrap  = modal.querySelector('.player-wrap');
-  const closeBtn = modal.querySelector('.modal-close');
-  let lastFocus = null;
+// Warm the Vimeo API in the background
+if ('requestIdleCallback' in window) {
+  requestIdleCallback(() => loadVimeoAPI());
+} else {
+  setTimeout(() => loadVimeoAPI(), 1500);
+}
 
-  function iframeHTML(vimeoId, title){
-	// we’ll build via Vimeo.Player, not a raw iframe src
+// Also warm on first hover/touch of any project (helps on fast clickers)
+let warmed = false;
+const warmOnce = () => { if (!warmed) { warmed = true; loadVimeoAPI(); } };
+document.addEventListener('pointerenter', (e) => {
+  if (e.target.closest('a.project')) warmOnce();
+}, { passive: true });
+document.addEventListener('touchstart', (e) => {
+  if (e.target.closest('a.project')) warmOnce();
+}, { passive: true, once: true });
+
+/* ===== Route-aware modal with unmuted-first autoplay + bulletproof scroll restore ===== */
+(() => {
+  const modal = document.getElementById('player-modal');
+  if (!modal) return;
+
+  const wrap     = modal.querySelector('.player-wrap');
+  const closeBtn = modal.querySelector('.modal-close');
+
+  let lastFocus = null;
+  let openedFromURL = location.href;
+  let savedScrollY = 0;
+  let savedScrollRestoration = 'auto';
+
+  function getScrollbarWidth() {
+	return window.innerWidth - document.documentElement.clientWidth;
+  }
+
+  function iframeShell(title){
 	return `<div class="vimeo-holder" aria-label="${title}"></div>
 			<button class="tap-to-play" hidden><span>▶︎&nbsp; Play with sound</span></button>`;
   }
 
-  function openModal(url, vimeoId, title, invoker){
-	lastFocus = invoker || document.activeElement;
-	history.pushState({ modal:true }, '', url);
+  function lockScroll() {
+	// snapshot scroll
+	savedScrollY = window.scrollY || window.pageYOffset || 0;
 
-	wrap.innerHTML = iframeHTML(vimeoId, title);
-	const holder = wrap.querySelector('.vimeo-holder');
-	const tap    = wrap.querySelector('.tap-to-play');
+	// stop Lenis (no virtual momentum during modal)
+	if (typeof lenis !== 'undefined' && lenis.stop) lenis.stop();
+
+	// avoid browser “helpful” scroll restoration while modal is active
+	savedScrollRestoration = history.scrollRestoration || 'auto';
+	if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+	// fixed-body lock (prevents any underlying movement)
+	const sw = getScrollbarWidth();
+	document.body.style.position = 'fixed';
+	document.body.style.top = `-${savedScrollY}px`;
+	document.body.style.left = '0';
+	document.body.style.right = '0';
+	document.body.style.width = '100%';
+	if (sw > 0) document.body.style.paddingRight = `${sw}px`; // prevent layout shift
 
 	document.documentElement.classList.add('modal-open');
 	document.body.classList.add('modal-open');
-	modal.showModal();
-	closeBtn.focus();
+  }
 
-	loadVimeoAPI().then(()=>{
-	  const player = new Vimeo.Player(holder, {
-		id: vimeoId,
-		autoplay: true,        // try autoplay…
-		muted: false,          // …with sound (your requirement)
-		playsinline: true,
-		dnt: true,
-		byline: false, title: false, portrait: false
+  function unlockScroll() {
+	// release fixed-body lock
+	document.body.style.position = '';
+	document.body.style.top = '';
+	document.body.style.left = '';
+	document.body.style.right = '';
+	document.body.style.width = '';
+	document.body.style.paddingRight = '';
+
+	document.documentElement.classList.remove('modal-open');
+	document.body.classList.remove('modal-open');
+
+	// restore scroll position first…
+	window.scrollTo(0, savedScrollY);
+
+	// …then resume Lenis so it syncs with the current position
+	if (typeof lenis !== 'undefined' && lenis.start) {
+	  // ensure sync on the next frame
+	  requestAnimationFrame(() => {
+		if (lenis.scrollTo) {
+		  lenis.scrollTo(savedScrollY, { immediate: true });
+		}
+		lenis.start();
 	  });
+	}
 
-	  // Try unmuted; if blocked, show CTA button
+	// give control back to browser for normal nav afterwards
+	if ('scrollRestoration' in history) history.scrollRestoration = savedScrollRestoration;
+  }
+
+function openModal(url, vimeoId, title, invoker){
+	lastFocus = invoker || document.activeElement;
+	openedFromURL = location.href;
+	history.pushState({ modal:true }, '', url);
+  
+	// 1) Inject the iframe immediately so the network starts NOW
+	const params = new URLSearchParams({
+	  autoplay: '1',        // try to start immediately
+	  muted: '0',           // your requirement: not muted
+	  playsinline: '1',
+	  dnt: '1',
+	  byline: '0', title: '0', portrait: '0',
+	  pip: '1'
+	}).toString();
+  
+	wrap.innerHTML = `
+	  <iframe
+		src="https://player.vimeo.com/video/${vimeoId}?${params}"
+		allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+		allowfullscreen
+		title="${title}"
+		loading="eager"
+		referrerpolicy="no-referrer-when-downgrade"></iframe>
+	  <button class="tap-to-play" hidden><span>▶︎&nbsp; Play with sound</span></button>
+	`;
+  
+	const iframe = wrap.querySelector('iframe');
+	const tap    = wrap.querySelector('.tap-to-play');
+  
+	// 2) Open modal & lock scroll
+	lockScroll();
+	modal.showModal();
+	closeBtn.focus({ preventScroll:true });
+  
+	// 3) Attach Vimeo Player to the already-loading iframe
+	loadVimeoAPI().then(()=>{
+	  const player = new Vimeo.Player(iframe);
+  
+	  // Try to ensure sound; if blocked, show the CTA
 	  Promise.resolve()
 		.then(()=>player.setVolume(1))
 		.then(()=>player.play())
@@ -159,44 +253,55 @@ function loadVimeoAPI(){
 		  tap.hidden = false;
 		  tap.addEventListener('click', ()=>{
 			tap.hidden = true;
-			player.play(); // user gesture → allowed with sound
+			player.play(); // one user gesture → allowed with audio
 		  }, { once:true });
 		});
-
+  
 	  wrap._player = player;
 	});
   }
 
-  function closeModal(popHistory=true){
-	if (wrap._player && wrap._player.unload){
+  function closeModal({ viaHistory = false } = {}) {
+	// stop player and free resources
+	if (wrap._player && wrap._player.unload) {
 	  wrap._player.unload().catch(()=>{});
 	}
 	wrap.innerHTML = '';
-	document.documentElement.classList.remove('modal-open');
-	document.body.classList.remove('modal-open');
+
 	if (modal.open) modal.close();
-	if (popHistory && history.state?.modal) history.back();
-	if (lastFocus && lastFocus.focus) lastFocus.focus();
+
+	// If user clicked close/ESC: revert URL without navigating (no browser scroll restore)
+	if (!viaHistory && history.state?.modal) {
+	  history.replaceState(null, '', openedFromURL);
+	}
+
+	// unlock & restore scroll (order matters)
+	unlockScroll();
+
+	// restore focus (without scrolling)
+	if (lastFocus && lastFocus.focus) {
+	  try { lastFocus.focus({ preventScroll: true }); } catch {}
+	}
   }
 
-  // Enhance tile clicks (keep normal nav if no data-vimeo)
+  // Enhance tile clicks (only with data-vimeo)
   document.addEventListener('click', (e)=>{
 	const a = e.target.closest('a.project');
-	if(!a) return;
+	if (!a) return;
 	const id = a.dataset.vimeo;
-	if(!id) return; // no enhancement → normal navigation to /work/slug/
+	if (!id) return; // no enhancement → normal nav
 	e.preventDefault();
 	const href  = a.getAttribute('href');
 	const title = a.getAttribute('aria-label') || a.querySelector('.title')?.textContent || 'Video';
 	openModal(href, id, title, a);
   });
 
-  // Close / ESC
-  closeBtn.addEventListener('click', ()=>closeModal(true));
-  modal.addEventListener('cancel', (e)=>{ e.preventDefault(); closeModal(true); });
+  // Button / ESC close → manual (no navigation; we restore URL ourselves)
+  closeBtn.addEventListener('click', ()=> closeModal({ viaHistory:false }));
+  modal.addEventListener('cancel', (e)=>{ e.preventDefault(); closeModal({ viaHistory:false }); });
 
-  // Back button closes modal instead of full nav
+  // Back button: close modal because user navigated history; do NOT alter history again
   window.addEventListener('popstate', ()=>{
-	if(modal.open) closeModal(false);
+	if (modal.open) closeModal({ viaHistory:true });
   });
 })();
