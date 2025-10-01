@@ -1,5 +1,3 @@
-/* global Lenis */
-
 /* ===== Smooth scroll (Lenis) ===== */
 const lenis = new Lenis();
 function raf(t){ lenis.raf(t); requestAnimationFrame(raf); }
@@ -15,15 +13,16 @@ const finishProgress = () => { if(!progressEl) return; setProgress(1); progressE
 const inViewport = (el, margin=0) => { const r = el.getBoundingClientRect(); return r.top < (innerHeight+margin) && r.bottom > (0 - margin) && r.left < (innerWidth+margin) && r.right > (0 - margin); };
 const once = (el, type) => new Promise(res => el.addEventListener(type, res, { once:true }));
 
-/* ===== Home videos ===== */
+/* ===== Home videos (hero + tiles) ===== */
 function initVideos(){
-  const content   = document.querySelector('.content');
-  const hero      = document.querySelector('.project.hero video');
-  const tiles     = Array.from(document.querySelectorAll('.grid .project video'));
+  const content   = document.querySelector('#content');                 // was .content
+  const hero      = document.querySelector('.project.hero-tile video'); // was .project.hero video
+  const tiles     = Array.from(document.querySelectorAll('.projects .grid .project video'));
   const allVideos = [...(hero ? [hero] : []), ...tiles];
 
   setProgress(0.15);
 
+  // baseline video attributes
   allVideos.forEach(v=>{
 	v.muted = true; v.loop = true; v.playsInline = true;
 	v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
@@ -32,18 +31,18 @@ function initVideos(){
   if (hero){ hero.setAttribute('preload','auto'); hero.setAttribute('autoplay',''); }
   tiles.forEach(v=>{ v.setAttribute('preload','metadata'); v.removeAttribute('autoplay'); });
 
+  // show page once hero/first tile is renderable
   const firstRenderable = hero || allVideos[0];
   if (firstRenderable){
 	(firstRenderable.readyState >= 2) ? setProgress(0.55)
 	  : firstRenderable.addEventListener('loadeddata', ()=>setProgress(0.55), { once:true });
   } else { setProgress(0.55); }
 
+  // fade in content when above-the-fold tiles are ready (cap by time)
   const marginPx = 120;
   const projectsInView = Array.from(document.querySelectorAll('.project')).filter(p => inViewport(p, marginPx));
-
   const perProjectReady = projectsInView.map(p=>{
-	const v = p.querySelector('video');
-	if(!v) return Promise.resolve();
+	const v = p.querySelector('video'); if(!v) return Promise.resolve();
 	const loaded  = (v.readyState >= 2) ? Promise.resolve() : once(v, 'loadeddata');
 	const playing = new Promise(res => v.addEventListener('playing', res, { once:true }));
 	return Promise.race([loaded, playing]).then(()=>{
@@ -61,6 +60,7 @@ function initVideos(){
 	setTimeout(()=>{ if(progress < 1) finishProgress(); }, 1800);
   });
 
+  // Pause off-screen videos; play when visible
   if ('IntersectionObserver' in window){
 	const io = new IntersectionObserver((entries)=>{
 	  entries.forEach(({target:v,isIntersecting,intersectionRatio})=>{
@@ -76,6 +76,7 @@ function initVideos(){
 	(hero || allVideos[0])?.play()?.catch(()=>{});
   }
 
+  // Page visibility: pause when hidden, resume visible in view
   document.addEventListener('visibilitychange', ()=>{
 	if(document.hidden){ allVideos.forEach(v=>v.pause()); }
 	else{
@@ -109,13 +110,12 @@ const warmOnce = () => { if (!warmed) { warmed = true; loadVimeoAPI(); } };
 document.addEventListener('pointerenter', (e) => { if (e.target.closest('a.project')) warmOnce(); }, { passive: true });
 document.addEventListener('touchstart',  (e) => { if (e.target.closest('a.project')) warmOnce(); }, { passive: true, once: true });
 
-/* ===== Player overlay (NO ANIMATIONS): instant open/close, iframe-first, unmuted-first, global API ===== */
+/* ===== Player overlay (NO animations): instant open/close, unmuted-first, global API ===== */
 (() => {
   const overlay  = document.getElementById('player');
   if (!overlay) return;
-  const panel    = overlay.querySelector('.player-panel');
+
   const wrap     = overlay.querySelector('.player-wrap');
-  const tap      = overlay.querySelector('.tap-to-play');
   const closeBtn = overlay.querySelector('.player-close');
 
   let openedFromURL = location.href;
@@ -171,10 +171,7 @@ document.addEventListener('touchstart',  (e) => { if (e.target.closest('a.projec
 		.then(()=>player.setVolume(1))
 		.then(()=>player.play())
 		.catch(()=>{
-		  // If you removed the CTA button, you can delete this whole catch block.
-		  if (!tap) return;
-		  tap.hidden = false;
-		  tap.onclick = () => { tap.hidden = true; player.play(); };
+		  // rely on Vimeo’s own big Play UI if sound-autoplay is blocked
 		});
 	  wrap._player = player;
 	});
@@ -185,26 +182,23 @@ document.addEventListener('touchstart',  (e) => { if (e.target.closest('a.projec
 	history.pushState({ player:true }, '', url);
 
 	lockScroll();
-	overlay.hidden = false;          // POP ON
-
+	overlay.hidden = false;          // pop on
 	mountPlayer(vimeoId, title);
   }
 
   function closeOverlay({ viaHistory=false } = {}){
-	// Tear down player & overlay immediately
 	if (wrap._player && wrap._player.unload) wrap._player.unload().catch(()=>{});
 	wrap.innerHTML = '';
-	overlay.hidden = true;           // POP OFF
+	overlay.hidden = true;           // pop off
 
-	// Restore URL without navigation if we pushed a state
 	if (!viaHistory && history.state?.player) {
 	  history.replaceState(null, '', openedFromURL);
 	}
 
 	unlockScroll();
 
-	// Nudge visible grid videos to repaint (prevents idle frame)
-	document.querySelectorAll('.grid .project video').forEach(v=>{
+	// nudge visible grid videos to repaint
+	document.querySelectorAll('.projects .grid .project video').forEach(v=>{
 	  const r = v.getBoundingClientRect();
 	  if (r.top < innerHeight && r.bottom > 0 && r.left < innerWidth && r.right > 0) {
 		const p = v.play(); if (p && p.catch) p.catch(()=>{});
@@ -212,12 +206,12 @@ document.addEventListener('touchstart',  (e) => { if (e.target.closest('a.projec
 	});
   }
 
-  // Intercept clicks on tiles with data-vimeo → open overlay
+  // Tiles with data-vimeo → overlay
   document.addEventListener('click', (e)=>{
-	const a = e.target.closest('a.project');
+	const a = e.target.closest('a.project'); // markup: <a class="project tile" ...>
 	if (!a) return;
 	const id = a.dataset.vimeo;
-	if (!id) return; // links without data-vimeo navigate normally
+	if (!id) return; // normal nav otherwise
 	e.preventDefault();
 	const href  = a.getAttribute('href');
 	const title = a.querySelector('.title')?.textContent || 'Video';
@@ -229,18 +223,17 @@ document.addEventListener('touchstart',  (e) => { if (e.target.closest('a.projec
   overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closeOverlay({ viaHistory:false }); });
   window.addEventListener('popstate', ()=>{ if (!overlay.hidden) closeOverlay({ viaHistory:true }); });
 
-  // === Export a tiny global API so other code (header links, etc.) can close/open reliably ===
+  // Global API for other code (e.g., header links)
   window.playerOverlay = {
 	open: openOverlay,
 	close: (opts) => closeOverlay(opts),
 	isOpen: () => !overlay.hidden
   };
 
-  // === Header link handler: if overlay is open, close then navigate ===
+  // Header links: close overlay first, then navigate
   document.addEventListener('click', (e) => {
-	const a = e.target.closest('header a');
+	const a = e.target.closest('.site-header a'); // was header a
 	if (!a) return;
-
 	if (window.playerOverlay.isOpen()) {
 	  e.preventDefault();
 	  window.playerOverlay.close({ viaHistory: false });

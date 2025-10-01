@@ -1,31 +1,24 @@
 <!DOCTYPE html>
-<html class="no-js page-archive page-work" lang="en">
+<html lang="en">
 <head>
+  <!-- Charset + Viewport -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <!-- Title + Description -->
   <title>Ismail Shallis — Work</title>
   <meta name="description" content="Selected work by director Ismail Shallis.">
-  <meta name="author" content="Ismail Shallis">
-  <meta name="robots" content="index,follow">
-  <meta name="theme-color" content="#000000">
 
+  <!-- Canonical -->
   <link rel="canonical" href="https://lechatlisse.github.io/ishallisdotcom/">
 
-  <!-- Speed up video start -->
-  <link rel="preconnect" href="https://player.vimeo.com" crossorigin>
-  <link rel="preconnect" href="https://i.vimeocdn.com" crossorigin>
-  <link rel="preconnect" href="https://f.vimeocdn.com" crossorigin>
-  <link rel="dns-prefetch" href="//player.vimeo.com">
-  <link rel="preconnect" href="https://vod-progressive.akamaized.net" crossorigin>
+  <!-- Theme / Icons (adjust paths if needed) -->
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="/ishallisdotcom/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/ishallisdotcom/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/ishallisdotcom/apple-touch-icon.png">
 
-  <!-- Preload first hero video (keep if it’s above the fold) -->
-  <link rel="preload" as="video"
-		href="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
-		type="video/mp4" crossorigin>
-
-  <!-- Open Graph / Twitter -->
-  <meta property="og:site_name" content="Ismail Shallis">
+  <!-- Social (OG/Twitter) -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://lechatlisse.github.io/ishallisdotcom/">
   <meta property="og:title" content="Ismail Shallis — Work">
@@ -36,162 +29,201 @@
   <meta name="twitter:description" content="Selected work by director Ismail Shallis.">
   <meta name="twitter:image" content="https://lechatlisse.github.io/ishallisdotcom/img/og-cover.jpg">
 
-  <link rel="icon" href="/ishallisdotcom/favicon.svg" type="image/svg+xml">
-  <link rel="icon" href="/ishallisdotcom/favicon.ico" sizes="any">
-  <link rel="apple-touch-icon" href="/ishallisdotcom/apple-touch-icon.png">
+  <!-- Performance: warm the video stack -->
+  <link rel="preconnect" href="https://player.vimeo.com" crossorigin>
+  <link rel="preconnect" href="https://i.vimeocdn.com" crossorigin>
+  <link rel="preconnect" href="https://f.vimeocdn.com" crossorigin>
+  <link rel="preconnect" href="https://vod-progressive.akamaized.net" crossorigin>
+  <link rel="dns-prefetch" href="//player.vimeo.com">
 
+  <!-- Optional: Preload first hero video for fast LCP (swap URL to your preferred source) -->
+  <link rel="preload" as="video" crossorigin
+		href="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
+		type="video/mp4" fetchpriority="high">
+
+  <!-- CSS -->
   <link rel="stylesheet" href="css/modern-normalize.min.css">
   <link rel="stylesheet" href="css/main.css">
 
-  <!-- Lenis in head (as you require) -->
+  <!-- Lenis: you’ve said this must be in <head> -->
   <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1/bundled/lenis.min.js"></script>
 </head>
-<body>
+<body class="page-home">
 
-<div id="progress"></div>
+  <!-- Thin progress bar (your JS controls it) -->
+  <div id="progress"></div>
 
-<div class="container">
-  <header>
-	<h1><a href="index.html">Ismail Shallis Latest</a></h1>
-	<nav>
-	  <ul>
-		<li class="nav-insta">
-		  <a href="https://www.instagram.com/chloeahayward/" target="_blank" rel="noopener">
-			<img decoding="async"
-				 src="https://ml2glajleasn.i.optimole.com/cb:K65u.30e7b/w:auto/h:auto/q:mauto/f:best/ig:avif/https://chloehayward.co/wp-content/themes/chloehayward/img/instagram.svg">
-		  </a>
-		</li>
-		<li class="nav-info"><a href="info/index.html">Info</a></li>
-	  </ul>
-	</nav>
+  <!-- Persistent header (single instance, sits above overlay via CSS z-index) -->
+  <header class="site-header">
+	<div class="header-inner">
+	  <h1 class="brand"><a href="/">Ismail&nbsp;Shallis</a></h1>
+	  <nav class="site-nav">
+		<ul class="nav-list">
+		  <li><a href="/info/">Info</a></li>
+		  <li class="nav-insta">
+			<a href="https://www.instagram.com/chloeahayward/" target="_blank" rel="noopener">
+			  <img src="https://chloehayward.co/wp-content/themes/chloehayward/img/instagram.svg" alt="">
+			</a>
+		  </li>
+		</ul>
+	  </nav>
+	</div>
   </header>
 
-  <div class="content fade">
+  <!-- Main content -->
+  <main id="content" class="content fade">
 
-	<!-- HERO (not clickable) -->
-	<div class="project hero">
-	  <video muted loop autoplay playsinline preload="auto" crossorigin="anonymous" poster="img/hero-fallback.jpg" fetchpriority="high">
-		<source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
-	  </video>
-	</div>
-
-	<!-- GRID -->
-	<div class="grid">
-
-	  <!-- repeat these tiles as needed -->
-	  <a href="/work/between-the-years/" class="project" data-vimeo="469961565">
-		<video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="img/hero-fallback.jpg">
-		  <source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
+	<!-- HERO (non-clickable, full-bleed 16:9 loop) -->
+	<section class="hero">
+	  <div class="project hero-tile">
+		<video
+		  muted loop autoplay playsinline preload="auto" crossorigin="anonymous"
+		  poster="img/hero-fallback.jpg">
+		  <source
+			src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
+			type="video/mp4">
 		</video>
-		<div class="overlay">
-		  <h2 class="title">Project Title</h2>
-		  <h3 class="subtitle">Subtitle here</h3>
-		  <p class="caption">Short caption text</p>
-		</div>
-	  </a>
-	  
-	  <a href="/work/between-the-years/" class="project" data-vimeo="469961565">
-		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="img/hero-fallback.jpg">
-			<source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
+	  </div>
+	</section>
+
+	<!-- PROJECTS GRID (2–1–2–1 cadence handled in CSS; each tile is a real link) -->
+	<section class="projects">
+	  <div class="grid">
+
+		<!-- Example tile: replace slug + vimeo id + poster as needed -->
+		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
+		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="img/tiles/between-the-years.jpg">
+			<source
+			  src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
+			  type="video/mp4">
 		  </video>
 		  <div class="overlay">
-			<h2 class="title">Project Title</h2>
-			<h3 class="subtitle">Subtitle here</h3>
-			<p class="caption">Short caption text</p>
+			<h2 class="title">Between Two Years</h2>
+			<div class="subtitle">Brand Film</div>
+			<p class="caption">Director’s Cut</p>
+		  </div>
+		</a>
+
+		<!-- Duplicate/adjust as needed (keep <a> + data-vimeo for overlay) -->
+		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
+		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="img/tiles/between-the-years.jpg">
+			<source
+			  src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
+			  type="video/mp4">
+		  </video>
+		  <div class="overlay">
+			<h2 class="title">Between Two Years</h2>
+			<div class="subtitle">Brand Film</div>
+			<p class="caption">Director’s Cut</p>
 		  </div>
 		</a>
 		
-		<a href="/work/between-the-years/" class="project" data-vimeo="469961565">
-			<video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="img/hero-fallback.jpg">
-			  <source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
-			</video>
-			<div class="overlay">
-			  <h2 class="title">Project Title</h2>
-			  <h3 class="subtitle">Subtitle here</h3>
-			  <p class="caption">Short caption text</p>
-			</div>
-		  </a>
-		  
-		  <a href="/work/between-the-years/" class="project" data-vimeo="469961565">
-			  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="img/hero-fallback.jpg">
-				<source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
-			  </video>
-			  <div class="overlay">
-				<h2 class="title">Project Title</h2>
-				<h3 class="subtitle">Subtitle here</h3>
-				<p class="caption">Short caption text</p>
-			  </div>
-			</a>
-			
-			<a href="/work/between-the-years/" class="project" data-vimeo="469961565">
-				<video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="img/hero-fallback.jpg">
-				  <source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
-				</video>
-				<div class="overlay">
-				  <h2 class="title">Project Title</h2>
-				  <h3 class="subtitle">Subtitle here</h3>
-				  <p class="caption">Short caption text</p>
-				</div>
-			  </a>
-			  
-			  <a href="/work/between-the-years/" class="project" data-vimeo="469961565">
-				  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="img/hero-fallback.jpg">
-					<source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
-				  </video>
-				  <div class="overlay">
-					<h2 class="title">Project Title</h2>
-					<h3 class="subtitle">Subtitle here</h3>
-					<p class="caption">Short caption text</p>
-				  </div>
-				</a>
-				
-				<a href="/work/between-the-years/" class="project" data-vimeo="469961565">
-					<video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="img/hero-fallback.jpg">
-					  <source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
-					</video>
-					<div class="overlay">
-					  <h2 class="title">Project Title</h2>
-					  <h3 class="subtitle">Subtitle here</h3>
-					  <p class="caption">Short caption text</p>
-					</div>
-				  </a>
-				  
-				  <a href="/work/between-the-years/" class="project" data-vimeo="469961565">
-					  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="img/hero-fallback.jpg">
-						<source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
-					  </video>
-					  <div class="overlay">
-						<h2 class="title">Project Title</h2>
-						<h3 class="subtitle">Subtitle here</h3>
-						<p class="caption">Short caption text</p>
-					  </div>
-					</a>
-					
-					<a href="/work/between-the-years/" class="project" data-vimeo="469961565">
-						<video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="img/hero-fallback.jpg">
-						  <source src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee" type="video/mp4">
-						</video>
-						<div class="overlay">
-						  <h2 class="title">Project Title</h2>
-						  <h3 class="subtitle">Subtitle here</h3>
-						  <p class="caption">Short caption text</p>
-						</div>
-					  </a>
+		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
+		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="img/tiles/between-the-years.jpg">
+			<source
+			  src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
+			  type="video/mp4">
+		  </video>
+		  <div class="overlay">
+			<h2 class="title">Between Two Years</h2>
+			<div class="subtitle">Brand Film</div>
+			<p class="caption">Director’s Cut</p>
+		  </div>
+		</a>
+		
+		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
+		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="img/tiles/between-the-years.jpg">
+			<source
+			  src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
+			  type="video/mp4">
+		  </video>
+		  <div class="overlay">
+			<h2 class="title">Between Two Years</h2>
+			<div class="subtitle">Brand Film</div>
+			<p class="caption">Director’s Cut</p>
+		  </div>
+		</a>
+		
+		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
+		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="img/tiles/between-the-years.jpg">
+			<source
+			  src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
+			  type="video/mp4">
+		  </video>
+		  <div class="overlay">
+			<h2 class="title">Between Two Years</h2>
+			<div class="subtitle">Brand Film</div>
+			<p class="caption">Director’s Cut</p>
+		  </div>
+		</a>
+		
+		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
+		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="img/tiles/between-the-years.jpg">
+			<source
+			  src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
+			  type="video/mp4">
+		  </video>
+		  <div class="overlay">
+			<h2 class="title">Between Two Years</h2>
+			<div class="subtitle">Brand Film</div>
+			<p class="caption">Director’s Cut</p>
+		  </div>
+		</a>
+		
+		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
+		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="img/tiles/between-the-years.jpg">
+			<source
+			  src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
+			  type="video/mp4">
+		  </video>
+		  <div class="overlay">
+			<h2 class="title">Between Two Years</h2>
+			<div class="subtitle">Brand Film</div>
+			<p class="caption">Director’s Cut</p>
+		  </div>
+		</a>
+		
+		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
+		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="img/tiles/between-the-years.jpg">
+			<source
+			  src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
+			  type="video/mp4">
+		  </video>
+		  <div class="overlay">
+			<h2 class="title">Between Two Years</h2>
+			<div class="subtitle">Brand Film</div>
+			<p class="caption">Director’s Cut</p>
+		  </div>
+		</a>
+		
+		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
+		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="img/tiles/between-the-years.jpg">
+			<source
+			  src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
+			  type="video/mp4">
+		  </video>
+		  <div class="overlay">
+			<h2 class="title">Between Two Years</h2>
+			<div class="subtitle">Brand Film</div>
+			<p class="caption">Director’s Cut</p>
+		  </div>
+		</a>
 
-	</div><!-- .grid -->
+	  </div>
+	</section>
 
-  </div><!-- .content -->
-</div><!-- .container -->
+  </main>
 
-<!-- Player overlay (no animations) -->
-<div id="player" hidden>
-  <div class="player-panel">
-	<button class="player-close">✕</button>
-	<div class="player-wrap"><!-- iframe injected here --></div>
-	<button class="tap-to-play" hidden><span>▶︎ Play with sound</span></button>
+  <!-- Player overlay (single instance; no animations in current build) -->
+  <div id="player" hidden>
+	<div class="player-panel">
+	  <button class="player-close">✕</button>
+	  <div class="player-wrap"><!-- Vimeo iframe injected by app.js --></div>
+	  <!-- If you want to rely only on Vimeo’s own Play UI, omit any extra CTA here -->
+	</div>
   </div>
-</div>
 
-<script src="js/app.js" defer></script>
+  <!-- App JS (handles Lenis loop, grid video IO, and overlay logic) -->
+  <script src="js/app.js" defer></script>
 </body>
 </html>
