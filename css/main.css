@@ -182,13 +182,14 @@ html.modal-open, body.modal-open{ overflow:hidden }
 
 /* Optional theme knobs (tweak freely) */
 .plyr{
+  position: absolute; inset: 0;
   /* Primary accent (progress, focus, etc.) */
   --plyr-color-main: red;
 
   /* Subtle sizing tweaks (comment out if you like Plyr defaults) */
   --plyr-control-spacing: 10px;
   --plyr-control-padding: 6px;
-  --plyr-range-track-height: 30px;
+  --plyr-range-track-height: 10px;
   --plyr-range-thumb-height: 12px;
   --plyr-range-thumb-width: 12px;
   
@@ -197,8 +198,17 @@ html.modal-open, body.modal-open{ overflow:hidden }
   --plyr-video-range-track-background: rgba(255,255,255,.15);
 }
 
+.plyr .poster-veil{
+  position: absolute; inset: 0;
+  background-position: center center;
+  background-size: cover; background-repeat: no-repeat;
+  opacity: 1; transition: opacity .5s ease;
+  pointer-events: none;
+  z-index: 2;                                     /* above video plane */
+}
+
 /* Controls container rounding (overlay + project pages) */
-.plyr__controls{ border-radius: 2px !important; }
+.plyr__controls{ border-radius: 2px !important; position: relative; z-index: 3; }
 
 /* Progress track rounding (wrapper + buffer + range) */
 .plyr__progress,
@@ -261,11 +271,24 @@ html.modal-open, body.modal-open{ overflow:hidden }
   width:max(100vw, calc(100dvh * 16 / 9));
   height:max(100dvh, calc(100vw * 9 / 16));
   transform:translate(-50%, -50%);
+  z-index: 1;
 }
 
 /* Pad controls a touch so they never hug the edges */
 #player .player-wrap .plyr__controls{
   padding: clamp(8px, 1.6vw, 14px);
+}
+
+/* Ensure controls render above the poster layer */
+.plyr__controls{ position:relative; z-index:3; }
+
+/* Use Plyr's built-in poster layer; make it cover and fade nicely */
+.plyr__poster{
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  opacity: 1;
+  transition: opacity .5s ease;
 }
 
 /* ========== Project pages ========== */
@@ -276,4 +299,4 @@ html.modal-open, body.modal-open{ overflow:hidden }
 .project-page .video-embed .plyr{ position:absolute; inset:0; }
 
 /* Vimeo plane sits inside the stage (no overscan here) */
-.project-page .video-embed .plyr__video-embed{ position:absolute; inset:0; }
+.project-page .video-embed .plyr__video-embed{ position:absolute; inset:0; z-index: 1; }
