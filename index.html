@@ -43,7 +43,7 @@
 
   <!-- CSS -->
   <link rel="stylesheet" href="css/modern-normalize.min.css">
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/main.css" fetchpriority="high">
 
   <!-- Lenis: you’ve said this must be in <head> -->
   <script src="/js/lenis.min.js" defer></script>
@@ -54,20 +54,22 @@
   <div id="progress"></div>
 
   <!-- Persistent header (single instance, sits above overlay via CSS z-index) -->
-  <header class="site-header">
-	<div class="header-inner">
-	  <h1 class="brand"><a href="/">Ismail&nbsp;Shallis</a></h1>
-	  <nav class="site-nav">
-		<ul class="nav-list">
-		  <li><a href="/info/">Info</a></li>
-		  <li class="nav-insta">
-			<a href="https://www.instagram.com/chloeahayward/" target="_blank" rel="noopener">
-			  <img src="https://chloehayward.co/wp-content/themes/chloehayward/img/instagram.svg" alt="">
-			</a>
-		  </li>
-		</ul>
-	  </nav>
+<header class="site-header">
+	<div class="nav-row">
+	  <a class="brand" href="/">Ismail Shallis</a>
+  
+	  <!-- ONE set of links for both desktop and mobile -->
+	  <div class="links" data-links>
+		<a class="nav-link" href="/work/">Work</a>
+		<a class="nav-link" href="/info/">Info</a>
+		<a class="nav-link" href="https://instagram.com/yourhandle" target="_blank" rel="noopener">Instagram</a>
+		<a class="nav-link" href="/archive/">Archive</a>
+	  </div>
+  
+	  <button class="nav-toggle" data-nav-toggle>Menu</button>
 	</div>
+  
+	<div class="nav-scrim" data-scrim></div>
   </header>
 
   <!-- Main content -->
@@ -78,9 +80,9 @@
 	  <div class="project hero-tile">
 		<video
 		  muted loop autoplay playsinline preload="auto" crossorigin="anonymous"
-		  poster="/img/hero-fallback.jpg">
+		  poster="/img/hero-fallback.jpg" fetchpriority="high">
 		  <source
-			src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
+			src="https://player.vimeo.com/progressive_redirect/playback/463600505/rendition/1080p/file.mp4?loc=external&log_user=0&signature=cabbe2cfab59e99d07786683ab48182181ed0fb70f78142ef021b2527c7f6d06"
 			type="video/mp4">
 		</video>
 	  </div>
@@ -94,7 +96,7 @@
 		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
 		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="/img/hero-fallback.jpg">
 			<source
-			  src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
+			  src="https://player.vimeo.com/progressive_redirect/playback/803264413/rendition/720p/file.mp4?loc=external&log_user=0&signature=85264d735fba9dfa217e1b5e7b25c65cb5d9dd70621057f7b35de89996611d28"
 			  type="video/mp4">
 		  </video>
 		  <div class="overlay">
@@ -108,7 +110,7 @@
 		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
 		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="/img/hero-fallback.jpg">
 			<source
-			  src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
+			  src="https://player.vimeo.com/progressive_redirect/playback/803265821/rendition/720p/file.mp4?loc=external&log_user=0&signature=2c7426afe561b9fc484d12e4ba571d9a4fa562079a93185ec4a798abeaeb2f50"
 			  type="video/mp4">
 		  </video>
 		  <div class="overlay">
@@ -119,7 +121,72 @@
 		</a>
 		
 		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
-		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="/img/hero-fallback.jpg">
+		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="/img/hero-fallback.jpg" loading="lazy">
+			<source
+			  src="https://player.vimeo.com/progressive_redirect/playback/803302145/rendition/720p/file.mp4?loc=external&log_user=0&signature=d0a7aac9cc15395a6e28795f29766a7ec9eaed9d2a1081e096bbfed6469de844"
+			  type="video/mp4">
+		  </video>
+		  <div class="overlay">
+			<h2 class="title">Between Two Years</h2>
+			<div class="subtitle">Brand Film</div>
+			<p class="caption">Director’s Cut</p>
+		  </div>
+		</a>
+		
+		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
+		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="/img/hero-fallback.jpg" loading="lazy">
+			<source
+			  src="https://player.vimeo.com/progressive_redirect/playback/803281684/rendition/720p/file.mp4?loc=external&log_user=0&signature=429c19986625f1438d0c130f63a3e6b98ecc3950d48760389039ef923c03ab2f"
+			  type="video/mp4">
+		  </video>
+		  <div class="overlay">
+			<h2 class="title">Between Two Years</h2>
+			<div class="subtitle">Brand Film</div>
+			<p class="caption">Director’s Cut</p>
+		  </div>
+		</a>
+		
+		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
+		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="/img/hero-fallback.jpg" loading="lazy">
+			<source
+			  src="https://player.vimeo.com/progressive_redirect/playback/803279851/rendition/720p/file.mp4?loc=external&log_user=0&signature=2065d196a50cd2d8d6988ddffbcbc75d58bce1921da1b63eb564271623ae6947"
+			  type="video/mp4">
+		  </video>
+		  <div class="overlay">
+			<h2 class="title">Between Two Years</h2>
+			<div class="subtitle">Brand Film</div>
+			<p class="caption">Director’s Cut</p>
+		  </div>
+		</a>
+		
+		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
+		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="/img/hero-fallback.jpg" loading="lazy">
+			<source
+			  src="https://player.vimeo.com/progressive_redirect/playback/803280616/rendition/720p/file.mp4?loc=external&log_user=0&signature=9cd6424a229152f53bba690eb95a8602864c9f0e5b996dfad0228f00392ab73f"
+			  type="video/mp4">
+		  </video>
+		  <div class="overlay">
+			<h2 class="title">Between Two Years</h2>
+			<div class="subtitle">Brand Film</div>
+			<p class="caption">Director’s Cut</p>
+		  </div>
+		</a>
+		
+		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
+		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="/img/hero-fallback.jpg" loading="lazy">
+			<source
+			  src="https://player.vimeo.com/progressive_redirect/playback/803280945/rendition/720p/file.mp4?loc=external&log_user=0&signature=2e7923e75853bc09af08dcac0ed18d212db4ac0941d613dad4e61a1bc1c5bc20"
+			  type="video/mp4">
+		  </video>
+		  <div class="overlay">
+			<h2 class="title">Between Two Years</h2>
+			<div class="subtitle">Brand Film</div>
+			<p class="caption">Director’s Cut</p>
+		  </div>
+		</a>
+		
+		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
+		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="/img/hero-fallback.jpg" loading="lazy">
 			<source
 			  src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
 			  type="video/mp4">
@@ -132,72 +199,7 @@
 		</a>
 		
 		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
-		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="/img/hero-fallback.jpg">
-			<source
-			  src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
-			  type="video/mp4">
-		  </video>
-		  <div class="overlay">
-			<h2 class="title">Between Two Years</h2>
-			<div class="subtitle">Brand Film</div>
-			<p class="caption">Director’s Cut</p>
-		  </div>
-		</a>
-		
-		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
-		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="/img/hero-fallback.jpg">
-			<source
-			  src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
-			  type="video/mp4">
-		  </video>
-		  <div class="overlay">
-			<h2 class="title">Between Two Years</h2>
-			<div class="subtitle">Brand Film</div>
-			<p class="caption">Director’s Cut</p>
-		  </div>
-		</a>
-		
-		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
-		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="/img/hero-fallback.jpg">
-			<source
-			  src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
-			  type="video/mp4">
-		  </video>
-		  <div class="overlay">
-			<h2 class="title">Between Two Years</h2>
-			<div class="subtitle">Brand Film</div>
-			<p class="caption">Director’s Cut</p>
-		  </div>
-		</a>
-		
-		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
-		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="/img/hero-fallback.jpg">
-			<source
-			  src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
-			  type="video/mp4">
-		  </video>
-		  <div class="overlay">
-			<h2 class="title">Between Two Years</h2>
-			<div class="subtitle">Brand Film</div>
-			<p class="caption">Director’s Cut</p>
-		  </div>
-		</a>
-		
-		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
-		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="/img/hero-fallback.jpg">
-			<source
-			  src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
-			  type="video/mp4">
-		  </video>
-		  <div class="overlay">
-			<h2 class="title">Between Two Years</h2>
-			<div class="subtitle">Brand Film</div>
-			<p class="caption">Director’s Cut</p>
-		  </div>
-		</a>
-		
-		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
-		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="/img/hero-fallback.jpg">
+		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="/img/hero-fallback.jpg" loading="lazy">
 			<source
 			  src="https://player.vimeo.com/progressive_redirect/playback/1089588494/rendition/1080p/file.mp4?loc=external&amp;log_user=0&amp;signature=f543dea7d92fca26002b28c25a894b5541b695fa12225384e91ccbb8070d20ee"
 			  type="video/mp4">

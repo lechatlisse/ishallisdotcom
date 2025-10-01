@@ -101,7 +101,36 @@ function initVideos(){
 	}
   });
 }
-(document.readyState === 'loading') ? document.addEventListener('DOMContentLoaded', initVideos) : initVideos();
+
+/* Preload poster images for smoother modal experience */
+function preloadPosters() {
+  if (!('IntersectionObserver' in window)) return;
+  
+  const posterObserver = new IntersectionObserver((entries) => {
+	entries.forEach(entry => {
+	  if (entry.isIntersecting) {
+		const video = entry.target.querySelector('video');
+		const poster = video?.getAttribute('poster');
+		
+		if (poster) {
+		  const img = new Image();
+		  img.src = poster; // Browser caches it
+		}
+		
+		posterObserver.unobserve(entry.target); // Only preload once
+	  }
+	});
+  }, { rootMargin: '200px' }); // Start preloading 200px before visible
+  
+  document.querySelectorAll('.projects .grid .project').forEach(tile => {
+	posterObserver.observe(tile);
+  });
+}
+
+// Run after video init
+(document.readyState === 'loading') 
+  ? document.addEventListener('DOMContentLoaded', () => { initVideos(); preloadPosters(); }) 
+  : (() => { initVideos(); preloadPosters(); })();
 
 /* Plyr loader */
 let plyrReady;
@@ -127,10 +156,22 @@ function loadPlyrAssets() {
   return plyrReady;
 }
 
+// Warm Plyr when first video tile enters viewport (more reliable than hover)
+if ('IntersectionObserver' in window) {
+  const warmObserver = new IntersectionObserver((entries) => {
+	if (entries.some(e => e.isIntersecting)) {
+	  loadPlyrAssets();
+	  warmObserver.disconnect(); // Only warm once
+	}
+  }, { rootMargin: '100px' }); // Start loading 100px before tile enters viewport
+  
+  document.querySelectorAll('.projects .grid .project').forEach(tile => {
+	warmObserver.observe(tile);
+  });
+}
+
+// Fallback: still warm on hover/touch for browsers without IntersectionObserver
 document.addEventListener('pointerenter', (e) => {
-  if (e.target.closest('a.project')) loadPlyrAssets();
-}, { passive: true });
-document.addEventListener('touchstart',  (e) => {
   if (e.target.closest('a.project')) loadPlyrAssets();
 }, { passive: true, once: true });
 
@@ -150,6 +191,10 @@ document.addEventListener('touchstart',  (e) => {
   let cachedPlayer = null;
   let cachedVimeoId = null;
   let cachedContainer = null;
+  
+  // Poster animation timing
+	const POSTER_FADE_DURATION = 1000; // matches CSS transition
+	const POSTER_SAFETY_TIMEOUT = 3500; // fallback if 'playing' event delayed
 
   function getScrollbarWidth(){ return window.innerWidth - document.documentElement.clientWidth; }
 
@@ -198,10 +243,27 @@ document.addEventListener('touchstart',  (e) => {
 	  return;
 	}
   
-	// Different video - destroy old player
-	if (cachedPlayer && cachedPlayer.destroy) {
-	  try { cachedPlayer.destroy(); } catch {}
-	}
+	// Different video - mute, pause, destroy old player, and clear DOM
+	  if (cachedPlayer) {
+		try { cachedPlayer.muted = true; } catch {} // Mute first - most important
+		try { cachedPlayer.pause(); } catch {}
+		try { 
+		  if (cachedPlayer.embed && cachedPlayer.embed.setVolume) {
+			cachedPlayer.embed.setVolume(0); // Mute at Vimeo iframe level too
+		  }
+		} catch {}
+		try { cachedPlayer.destroy(); } catch {}
+	  }
+	  
+	  // Remove old container from DOM immediately
+	  if (cachedContainer && cachedContainer.isConnected) {
+		cachedContainer.remove();
+	  }
+	  
+	  // Clear cache references
+	  cachedPlayer = null;
+	  cachedVimeoId = null;
+	  cachedContainer = null;
   
 	loadPlyrAssets().then(() => {
 	  wrap.innerHTML = `
@@ -223,7 +285,7 @@ document.addEventListener('touchstart',  (e) => {
 		clickToPlay: true,
 		hideControls: false,
 		tooltips: { controls: false, seek: false },
-		ratio: '16:9',
+		ratio: null,
 		storage: { enabled: false },
 		loop: { active: true },
 		vimeo: { dnt:true, playsinline:true, byline:false, portrait:false, title:false }
@@ -233,7 +295,6 @@ document.addEventListener('touchstart',  (e) => {
 	  cachedPlayer = player;
 	  cachedVimeoId = vimeoId;
 	  cachedContainer = container;
-	  wrap._plyr = player;
   
 	  player.on('ready', () => {
 		requestAnimationFrame(() => {
@@ -252,12 +313,12 @@ document.addEventListener('touchstart',  (e) => {
 			  }
   
 			  const fade = () => {
-				veil.style.opacity = '0';
-				setTimeout(() => veil.remove(), 1050);
-			  };
-  
-			  player.on('playing', fade);
-			  setTimeout(() => { if (veil.isConnected) fade(); }, 3500);
+				  veil.style.opacity = '0';
+				  setTimeout(() => veil.remove(), POSTER_FADE_DURATION + 50);
+				};
+			  
+				player.on('playing', fade);
+				setTimeout(() => { if (veil.isConnected) fade(); }, POSTER_SAFETY_TIMEOUT);
 			}
   
 			try { player.muted = false; } catch {}
@@ -286,14 +347,9 @@ document.addEventListener('touchstart',  (e) => {
   }
 
   function closeOverlay({ viaHistory=false } = {}){
-	// Pause both cached player AND any player in wrap
+	// Pause player (both references point to same object)
 	if (cachedPlayer) {
 	  try { cachedPlayer.pause(); } catch {}
-	}
-	
-	// Fallback: also check wrap._plyr in case caching hasn't completed
-	if (wrap._plyr) {
-	  try { wrap._plyr.pause(); } catch {}
 	}
 	
 	overlay.hidden = true;
@@ -349,15 +405,22 @@ document.addEventListener('touchstart',  (e) => {
   };
 
   document.addEventListener('click', (e) => {
-	const a = e.target.closest('.site-header a');
-	if (!a) return;
-	if (window.playerOverlay.isOpen()) {
-	  e.preventDefault();
-	  window.playerOverlay.close({ viaHistory: false });
-	  location.href = a.href;
-	}
-  });
-})();
+	  const a = e.target.closest('.site-header a');
+	  if (!a) return;
+	  if (window.playerOverlay.isOpen()) {
+		e.preventDefault();
+		window.playerOverlay.close({ viaHistory: false });
+		location.href = a.href;
+	  }
+	});
+  
+	// Cleanup on page unload
+	window.addEventListener('beforeunload', () => {
+	  if (cachedPlayer && cachedPlayer.destroy) {
+		try { cachedPlayer.destroy(); } catch {}
+	  }
+	});
+  })();
 
 /* Project pages: auto-enhance single video with Plyr */
 function initProjectPagePlyr(){
@@ -400,15 +463,20 @@ function initProjectPagePlyr(){
 	  clickToPlay: true,
 	  hideControls: false,
 	  tooltips: { controls: false, seek: false },
-	  ratio: '16:9',
+	  ratio: null,
 	  storage: { enabled: false },
 	  loop: { active: true },
 	  vimeo: { dnt:true, playsinline:true, byline:false, portrait:false, title:false }
 	});
 
+	const POSTER_FADE_DURATION = 1000; // matches CSS transition
+	
 	player.on('playing', () => {
 	  const veil = container.querySelector('.poster-veil');
-	  if (veil){ veil.style.opacity = '0'; setTimeout(() => veil.remove(), 1050); }
+	  if (veil){ 
+		veil.style.opacity = '0'; 
+		setTimeout(() => veil.remove(), POSTER_FADE_DURATION + 50); 
+	  }
 	});
 
 	const forceFullVolume = () => {
@@ -426,3 +494,82 @@ function initProjectPagePlyr(){
 (document.readyState === 'loading')
   ? document.addEventListener('DOMContentLoaded', initProjectPagePlyr)
   : initProjectPagePlyr();
+  
+(() => {
+	const btn   = document.querySelector('[data-nav-toggle]');
+	const links = document.querySelector('[data-links]');
+	const scrim = document.querySelector('[data-scrim]');
+	if (!btn || !links || !scrim) return;
+  
+	const toggle = () => document.documentElement.classList.toggle('nav-open');
+	const close  = () => document.documentElement.classList.remove('nav-open');
+  
+	btn.addEventListener('click', toggle);
+	scrim.addEventListener('click', close);
+  
+	// Close after tapping any link (mobile only)
+	links.addEventListener('click', (e) => {
+	  if (window.matchMedia('(max-width: 800px)').matches && e.target.closest('a')) close();
+	});
+  })();
+  
+  // === NAV LETTER SCRAMBLE (desktop only) ==========================
+  (() => {
+	const supportsHover = matchMedia('(hover: hover) and (pointer: fine)').matches;
+	if (!supportsHover) return;
+  
+	const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+	const getRand = (s) => s[(Math.random() * s.length) | 0];
+  
+	// Keep each link the same width during the effect to avoid layout shift
+	window.addEventListener('load', () => {
+	  document.querySelectorAll('.nav-link').forEach(el => {
+		el.style.minWidth = el.offsetWidth + 'px';
+	  });
+	});
+  
+	function scramble(el, duration = 300) {
+	  if (el._raf) cancelAnimationFrame(el._raf);
+  
+	  const original = (el.dataset.text = el.dataset.text || el.textContent);
+	  const len = original.length;
+	  const start = performance.now();
+  
+	  const tick = (now) => {
+		const t = Math.min(1, (now - start) / duration);
+		const reveal = Math.floor(t * len);
+		let out = '';
+  
+		for (let i = 0; i < len; i++) {
+		  const ch = original[i];
+		  if (i < reveal || /\s/.test(ch)) {
+			out += ch;                 // already revealed or space
+		  } else {
+			const pool = /[A-Z]/.test(ch) ? GLYPHS : GLYPHS.toLowerCase();
+			out += getRand(pool);
+		  }
+		}
+  
+		el.textContent = out;
+  
+		if (t < 1) {
+		  el._raf = requestAnimationFrame(tick);
+		} else {
+		  el.textContent = original;   // settle exactly to the original
+		  el._raf = null;
+		}
+	  };
+  
+	  el._raf = requestAnimationFrame(tick);
+	}
+  
+	document.querySelectorAll('.nav-link').forEach((el) => {
+	  el.addEventListener('mouseenter', () => scramble(el, 300));
+	  el.addEventListener('mouseleave', () => {
+		if (el._raf) cancelAnimationFrame(el._raf);
+		if (el.dataset.text) el.textContent = el.dataset.text;
+		el._raf = null;
+	  });
+	});
+  })();
+ 

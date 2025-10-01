@@ -58,25 +58,71 @@ a{ color:inherit; text-decoration:none }
 /* ==========================================================================
    Header (single instance, always above overlay)
    ========================================================================== */
-.site-header{
-  position:fixed; top:0; left:0; right:0; height:var(--header-h);
-  z-index:var(--z-header);
-  color:var(--fg);
-  text-transform:uppercase; letter-spacing:.1em;
-  mix-blend-mode:difference; /* your current style */
-  transition:background .75s linear;
-}
-.site-header .header-inner{
-  height:100%; display:flex; align-items:center; justify-content:space-between;
-  padding:0 20px;
-}
-.site-header .brand a{ display:inline-block; padding:10px 0; font-size:15px }
-.site-header .site-nav .nav-list{ display:flex; align-items:center; gap:10px; margin:0; padding:0; list-style:none }
-.site-header .nav-insta img{ width:13px; height:16px }
-.site-header a:hover{ color:var(--accent) }
-
-/* Keep header readable over dark overlay */
-html.modal-open .site-header{ mix-blend-mode:normal }
+/* Fixed header, transparent, 40px side padding */
+   .site-header{
+     position: fixed; top: 0; left: 0; right: 0; z-index: var(--z-header);
+     padding: 12px 40px;
+     background: transparent !important;   /* absolutely no background */
+   }
+   
+   /* Row = 5 items on desktop with equal gaps end-to-end */
+   .nav-row{
+     display: flex; align-items: center; justify-content: space-between;
+   }
+   
+   /* Use one menu for both layouts */
+   .links{ display: contents; }             /* children act as direct flex items */
+   
+   .brand,
+   .nav-link,
+   .nav-toggle{
+     color: #fff;                           /* white text */
+     font-size: 16px;                       /* fixed size (no clamp) */
+     line-height: 1;
+     text-decoration: none;
+   }
+   
+   .brand{ font-weight: 600; padding: 8px 0; }
+   .nav-link{ padding: 8px 0; transition: opacity .2s; }
+   .nav-link:hover{ opacity: .75; }
+   
+   /* “Menu” toggle (hidden on desktop) */
+   .nav-toggle{
+     display: none; border: 0; background: transparent; padding: 6px 0; cursor: pointer;
+   }
+   
+   /* Scrim: hidden by default so nothing dark sits behind header */
+   .nav-scrim{
+     display: none;
+     position: fixed; inset: 0;
+     background: rgba(0,0,0,.35);
+     opacity: 0; pointer-events: none;
+     transition: opacity .25s ease;
+   }
+   
+   /* ============ Mobile ============ */
+   @media (max-width: 800px){
+     /* brand stays; “Menu” appears at right */
+     .nav-toggle{ display: inline-block; margin-left: auto; }
+   
+     /* same .links becomes a right slide-out panel; only as tall as its content */
+     .links{
+       display: flex; flex-direction: column; gap: 10px;
+       position: fixed; top: 12px; right: 40px;    /* respects header padding */
+       width: max-content; min-width: 200px;
+       padding: 16px 22px;
+       background: rgba(10,10,10,.96);             /* panel has a background */
+       border-radius: 6px;
+       transform: translateX(120%);                /* off-canvas by default */
+       transition: transform .28s ease;
+     }
+     .nav-link{ color:#fff; padding: 10px 2px; text-align: left; }
+   }
+   
+   /* Open state (toggled on <html>) */
+   .nav-open .links{ transform: translateX(0); }
+   .nav-open .nav-scrim{ display: block; opacity: 1; pointer-events: auto; }
+   .nav-open, .nav-open body{ overflow: hidden; }   /* lock page scroll while menu open */
 
 /* ==========================================================================
    Main content + fade-in (JS removes .fade)
@@ -185,7 +231,7 @@ html.modal-open, body.modal-open{ overflow:hidden }
 .plyr{
   position: absolute; inset: 0;
   /* Primary accent (progress, focus, etc.) */
-  --plyr-color-main: red;
+  --plyr-color-main: #fdfed0;
 
   /* Subtle sizing tweaks (comment out if you like Plyr defaults) */
   --plyr-control-spacing: 10px;
@@ -195,8 +241,8 @@ html.modal-open, body.modal-open{ overflow:hidden }
   --plyr-range-thumb-width: 12px;
   
   /* optional: buffer/background tints to taste */
-  --plyr-video-progress-buffered-background: rgba(255,255,255,0);
-  --plyr-video-range-track-background: rgba(255,255,255,.15);
+  --plyr-video-progress-buffered-background: rgba(253,254,208,.5);
+  --plyr-video-range-track-background: rgba(255,255,255,.1);
 }
 
 .plyr .poster-veil{
@@ -210,16 +256,25 @@ html.modal-open, body.modal-open{ overflow:hidden }
 
 /* Controls container rounding (overlay + project pages) */
 .plyr__controls{ 
-  border-radius: 2px !important; 
+  qqqborder-radius: 2px !important; 
   position: relative; 
   z-index: 3; 
 }
 
+.plyr__time {
+  font-weight: bold;
+}
+
 /* Progress track rounding (wrapper + buffer + range) */
+/* Target all Plyr progress bars */
 .plyr__progress,
-.plyr__progress__buffer,
-.plyr__progress input[type="range"]{
-  border-radius: 2px !important;
+.plyr__progress input[type=range],
+.plyr__progress progress,
+.plyr__progress__buffer {
+  border-radius: 0 !important; /* remove rounding */
+  -webkit-border-radius: 0 !important;
+  -moz-border-radius: 0 !important;
+  background-clip: padding-box;
 }
 
 /* Make sure the WebKit track matches thickness */
@@ -296,6 +351,31 @@ html.modal-open, body.modal-open{ overflow:hidden }
   transition: opacity .5s ease;
 }
 
+/* --- Square off the BUFFER bar completely (Plyr uses <progress>) --- */
+.plyr__progress progress {
+  border-radius: 0 !important;
+  overflow: hidden;                 /* clip any residual rounding */
+}
+
+/* WebKit (Chrome/Safari) */
+.plyr__progress progress::-webkit-progress-bar,
+.plyr__progress progress::-webkit-progress-value {
+  border-radius: 0 !important;
+}
+
+/* Firefox */
+.plyr__progress progress::-moz-progress-bar {
+  border-radius: 0 !important;
+}
+
+/* --- Also square the PLAYED track (range track) in all engines --- */
+.plyr__progress input[type="range"]::-webkit-slider-runnable-track { border-radius: 0 !important; }
+.plyr__progress input[type="range"]::-moz-range-track                { border-radius: 0 !important; }
+.plyr__progress input[type="range"]::-ms-track                       { border-radius: 0 !important; }
+
+/* Ensure Plyr’s own buffer helper class isn’t re-rounding */
+.plyr__progress__buffer { border-radius: 0 !important; }
+
 /* ========== Project pages ========== */
 /* Your 16:9 stage */
 .project-page .video-embed{ position:relative; aspect-ratio:16/9; background:#000; }
@@ -305,3 +385,4 @@ html.modal-open, body.modal-open{ overflow:hidden }
 
 /* Vimeo plane sits inside the stage (no overscan here) */
 .project-page .video-embed .plyr__video-embed{ position:absolute; inset:0; z-index: 1; }
+
