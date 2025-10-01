@@ -166,7 +166,8 @@ html.modal-open .site-header{ mix-blend-mode:normal }
 
 /* Close button aligned below header line */
 #player .player-close{
-  position:absolute; top:calc(var(--header-h) + 12px); right:16px; z-index:2;
+  position:absolute; top:calc(var(--header-h) + 12px); right:16px; 
+  z-index: 20;
   width:40px; height:40px; line-height:40px; text-align:center;
   border:0; border-radius:999px; cursor:pointer;
   background:rgba(0,0,0,.5); color:#fff; font-size:20px;
@@ -202,13 +203,17 @@ html.modal-open, body.modal-open{ overflow:hidden }
   position: absolute; inset: 0;
   background-position: center center;
   background-size: cover; background-repeat: no-repeat;
-  opacity: 1; transition: opacity .5s ease;
+  opacity: 1; transition: opacity 1s ease;
   pointer-events: none;
-  z-index: 2;                                     /* above video plane */
+  z-index: 1;
 }
 
 /* Controls container rounding (overlay + project pages) */
-.plyr__controls{ border-radius: 2px !important; position: relative; z-index: 3; }
+.plyr__controls{ 
+  border-radius: 2px !important; 
+  position: relative; 
+  z-index: 3; 
+}
 
 /* Progress track rounding (wrapper + buffer + range) */
 .plyr__progress,

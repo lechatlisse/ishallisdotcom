@@ -1,14 +1,11 @@
 /* global Lenis */
-/* =========================
-   Smooth scroll (Lenis)
-   ========================= */
+
+/* Smooth scroll */
 const lenis = new Lenis();
 function raf(t){ lenis.raf(t); requestAnimationFrame(raf); }
 requestAnimationFrame(raf);
 
-/* =========================
-   Progress bar helpers
-   ========================= */
+/* Progress bar */
 const progressEl = document.getElementById('progress');
 let progress = 0;
 const setProgress = p => {
@@ -23,9 +20,7 @@ const finishProgress = () => {
   setTimeout(()=>progressEl.remove(), 600);
 };
 
-/* =========================
-   Utils
-   ========================= */
+/* Utils */
 const inViewport = (el, margin=0) => {
   const r = el.getBoundingClientRect();
   return r.top < (innerHeight+margin) && r.bottom > (0-margin) &&
@@ -33,9 +28,7 @@ const inViewport = (el, margin=0) => {
 };
 const once = (el, type) => new Promise(res => el.addEventListener(type, res, { once:true }));
 
-/* =========================
-   Home videos (hero + tiles)
-   ========================= */
+/* Home videos (hero + tiles) */
 function initVideos(){
   const content   = document.querySelector('#content');
   const hero      = document.querySelector('.project.hero-tile video');
@@ -44,7 +37,6 @@ function initVideos(){
 
   setProgress(0.15);
 
-  // Baseline attributes for mobile autoplay (home uses muted loops)
   allVideos.forEach(v=>{
 	v.muted = true; v.loop = true; v.playsInline = true;
 	v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
@@ -53,14 +45,12 @@ function initVideos(){
   if (hero){ hero.setAttribute('preload','auto'); hero.setAttribute('autoplay',''); }
   tiles.forEach(v=>{ v.setAttribute('preload','metadata'); v.removeAttribute('autoplay'); });
 
-  // First render milestone (hero or first)
   const firstRenderable = hero || allVideos[0];
   if (firstRenderable){
 	(firstRenderable.readyState >= 2) ? setProgress(0.55)
 	  : firstRenderable.addEventListener('loadeddata', ()=>setProgress(0.55), { once:true });
   } else { setProgress(0.55); }
 
-  // Reveal page when above-the-fold tiles are ready (or cap by time)
   const marginPx = 120;
   const projectsInView = Array.from(document.querySelectorAll('.project'))
 	.filter(p => inViewport(p, marginPx));
@@ -84,7 +74,6 @@ function initVideos(){
 	setTimeout(()=>{ if(progress < 1) finishProgress(); }, 1800);
   });
 
-  // Pause off-screen; play when visible
   if ('IntersectionObserver' in window){
 	const io = new IntersectionObserver((entries)=>{
 	  entries.forEach(({target:v,isIntersecting,intersectionRatio})=>{
@@ -100,7 +89,6 @@ function initVideos(){
 	(hero || allVideos[0])?.play()?.catch(()=>{});
   }
 
-  // Pause all when hidden; resume visible when shown again
   document.addEventListener('visibilitychange', ()=>{
 	if(document.hidden){ allVideos.forEach(v=>v.pause()); }
 	else{
@@ -115,14 +103,11 @@ function initVideos(){
 }
 (document.readyState === 'loading') ? document.addEventListener('DOMContentLoaded', initVideos) : initVideos();
 
-/* =========================
-   Plyr assets loader (lazy)
-   ========================= */
+/* Plyr loader */
 let plyrReady;
 function loadPlyrAssets() {
   if (plyrReady) return plyrReady;
   plyrReady = new Promise((resolve, reject) => {
-	// CSS
 	const cssId = 'plyr-css';
 	if (!document.getElementById(cssId)) {
 	  const link = document.createElement('link');
@@ -131,7 +116,6 @@ function loadPlyrAssets() {
 	  link.href = 'https://cdn.jsdelivr.net/npm/plyr@3/dist/plyr.css';
 	  document.head.appendChild(link);
 	}
-	// JS
 	if (window.Plyr) { resolve(); return; }
 	const script = document.createElement('script');
 	script.id = 'plyr-js';
@@ -143,7 +127,6 @@ function loadPlyrAssets() {
   return plyrReady;
 }
 
-// Warm on intent (hover/touch over tiles)
 document.addEventListener('pointerenter', (e) => {
   if (e.target.closest('a.project')) loadPlyrAssets();
 }, { passive: true });
@@ -151,10 +134,7 @@ document.addEventListener('touchstart',  (e) => {
   if (e.target.closest('a.project')) loadPlyrAssets();
 }, { passive: true, once: true });
 
-/* ============================================================
-   Player overlay (instant open/close, unmuted-first, global API)
-   Uses Plyr so controls stay inside the viewport even if video crops
-   ============================================================ */
+/* Player overlay */
 (() => {
   const overlay  = document.getElementById('player');
   if (!overlay) return;
@@ -171,7 +151,6 @@ document.addEventListener('touchstart',  (e) => {
   function lockScroll(){
 	savedScrollY = window.scrollY || 0;
 	if (typeof lenis !== 'undefined' && lenis.stop) lenis.stop();
-
 	savedScrollRestoration = history.scrollRestoration || 'auto';
 	if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
@@ -197,18 +176,8 @@ document.addEventListener('touchstart',  (e) => {
 	if ('scrollRestoration' in history) history.scrollRestoration = savedScrollRestoration;
   }
 
-  // Minimal, custom control set (tweak here)
-  const PLYR_CONTROLS = [
-	'progress', 'current-time', 'duration',
-	'mute', 'fullscreen'
-  ];
-
-function mountPlayer(vimeoId, title, posterUrl){
-	// Debug: verify we have a poster
-	console.log('[mountPlayer] posterUrl:', posterUrl);
-	
+  function mountPlayer(vimeoId, title, posterUrl){
 	loadPlyrAssets().then(() => {
-	  // Build the Plyr container
 	  wrap.innerHTML = `
 		<div class="plyr plyr--overlay">
 		  <div class="plyr__video-embed"
@@ -217,10 +186,10 @@ function mountPlayer(vimeoId, title, posterUrl){
 			   title="${title || 'Video'}"></div>
 		</div>
 	  `;
-  
+
 	  const container = wrap.querySelector('.plyr');
 	  const el = container.querySelector('.plyr__video-embed');
-  
+
 	  const player = new Plyr(el, {
 		controls: ['progress','current-time','duration','mute','fullscreen'],
 		autoplay: true,
@@ -233,71 +202,48 @@ function mountPlayer(vimeoId, title, posterUrl){
 		loop: { active: true },
 		vimeo: { dnt:true, playsinline:true, byline:false, portrait:false, title:false }
 	  });
-  
-	  // Wait for Plyr to fully build its DOM
+
 	  player.on('ready', () => {
-		console.log('[Plyr] ready event fired');
-		
-		// Use RAF to ensure DOM is fully painted
 		requestAnimationFrame(() => {
 		  requestAnimationFrame(() => {
 			if (posterUrl) {
-			  console.log('[Veil] Creating with poster:', posterUrl);
+			  // Find the video embed container (not the main plyr container)
+			  const videoEmbed = container.querySelector('.plyr__video-embed');
 			  
 			  const veil = document.createElement('div');
 			  veil.className = 'poster-veil';
 			  veil.style.backgroundImage = `url("${posterUrl}")`;
 			  
-			  // Append to container
-			  container.appendChild(veil);
-			  
-			  // Debug: verify it was appended
-			  console.log('[Veil] Appended to DOM:', veil.isConnected);
-			  console.log('[Veil] Computed opacity:', window.getComputedStyle(veil).opacity);
-			  console.log('[Veil] Computed z-index:', window.getComputedStyle(veil).zIndex);
-  
-			  // Fade out on playing
+			  // Append to video embed, not to main container
+			  if (videoEmbed) {
+				videoEmbed.appendChild(veil);
+			  } else {
+				container.prepend(veil); // Fallback
+			  }
+	  
 			  const fade = () => {
-				console.log('[Veil] Fading out');
 				veil.style.opacity = '0';
-				setTimeout(() => {
-				  if (veil.isConnected) {
-					console.log('[Veil] Removing');
-					veil.remove();
-				  }
-				}, 550);
+				setTimeout(() => veil.remove(), 1050);
 			  };
-  
+	  
 			  player.on('playing', fade);
-			  
-			  // Safety timeout
-			  setTimeout(() => { 
-				if (veil.isConnected && window.getComputedStyle(veil).opacity !== '0') {
-				  console.log('[Veil] Safety timeout - fading');
-				  fade();
-				}
-			  }, 2000);
-			} else {
-			  console.warn('[Veil] No posterUrl provided');
+			  setTimeout(() => { if (veil.isConnected) fade(); }, 2000);
 			}
-  
-			// Force full volume
+	  
 			try { player.muted = false; } catch {}
 			try { player.volume = 1; } catch {}
 			try { player.embed?.setVolume?.(1); } catch {}
 		  });
 		});
 	  });
-  
-	  // Additional volume enforcement
+
 	  player.on('play', () => {
 		try { player.muted = false; } catch {}
 		try { player.volume = 1; } catch {}
 		try { player.embed?.setVolume?.(1); } catch {}
 	  });
-  
-	  player.play().catch(()=>{ /* user interaction may be needed */ });
-  
+
+	  player.play().catch(()=>{});
 	  wrap._plyr = player;
 	});
   }
@@ -314,7 +260,7 @@ function mountPlayer(vimeoId, title, posterUrl){
 	if (wrap._plyr && wrap._plyr.destroy) { try { wrap._plyr.destroy(); } catch {} }
 	wrap._plyr = null;
 	wrap.innerHTML = '';
-	overlay.hidden = true;   // pop off
+	overlay.hidden = true;
 
 	if (!viaHistory && history.state?.player) {
 	  history.replaceState(null, '', openedFromURL);
@@ -322,7 +268,6 @@ function mountPlayer(vimeoId, title, posterUrl){
 
 	unlockScroll();
 
-	// Nudge visible grid videos to repaint/play
 	document.querySelectorAll('.projects .grid .project video').forEach(v=>{
 	  const r = v.getBoundingClientRect();
 	  if (r.top < innerHeight && r.bottom > 0 && r.left < innerWidth && r.right > 0) {
@@ -331,51 +276,42 @@ function mountPlayer(vimeoId, title, posterUrl){
 	});
   }
 
-  // Tiles with data-vimeo → overlay
   document.addEventListener('click', (e)=>{
 	const a = e.target.closest('a.project');
 	if (!a) return;
-  
+
 	const id = a.dataset.vimeo;
-	if (!id) return; // let normal nav happen
-  
+	if (!id) return;
+
 	e.preventDefault();
-  
+
 	const href  = a.getAttribute('href') || location.href;
 	const title = a.querySelector('.title')?.textContent || 'Video';
-  
-	// Robust poster pickup with a safe fallback
+
 	const v = a.querySelector('video');
 	let poster = '';
 	if (v) poster = v.getAttribute('poster') || v.poster || '';
-	if (!poster) poster = a.getAttribute('data-poster') || 'img/hero-fallback.jpg';
-  
-	// (Optional tiny debug while you test)
-	// console.debug('[overlay] poster:', poster);
-  
+	if (!poster) poster = a.getAttribute('data-poster') || '/img/hero-fallback.jpg';
+
 	openOverlay(href, id, title, poster);
   });
 
-  // Close controls
   closeBtn?.addEventListener('click', ()=> closeOverlay({ viaHistory:false }));
   overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closeOverlay({ viaHistory:false }); });
   window.addEventListener('popstate', ()=>{ if (!overlay.hidden) closeOverlay({ viaHistory:true }); });
-  
-  // Allow closing overlay with Escape key
+
   document.addEventListener('keydown', (e) => {
 	if (e.key === 'Escape' && !overlay.hidden) {
 	  closeOverlay({ viaHistory: false });
 	}
   });
-  
-  // Global API
+
   window.playerOverlay = {
 	open: openOverlay,
 	close: (opts) => closeOverlay(opts),
 	isOpen: () => !overlay.hidden
   };
 
-  // Header links: close overlay first, then navigate
   document.addEventListener('click', (e) => {
 	const a = e.target.closest('.site-header a');
 	if (!a) return;
@@ -387,74 +323,69 @@ function mountPlayer(vimeoId, title, posterUrl){
   });
 })();
 
-/* ===================================================
-   Project pages: auto-enhance a single video with Plyr
-   Markup: <div class="project-page"><div class="video-embed" data-vimeo="123456789"></div></div>
-   =================================================== */
+/* Project pages: auto-enhance single video with Plyr */
 function initProjectPagePlyr(){
-	 const holder = document.querySelector('.project-page .video-embed');
-	 if (!holder) return;
-   
-	 // Resolve Vimeo ID
-	 let vimeoId = holder.getAttribute('data-vimeo');
-	 if (!vimeoId) {
-	   const existing = holder.querySelector('iframe[src*="player.vimeo.com"]');
-	   const m = existing && existing.src.match(/video\/(\d+)/);
-	   if (m) vimeoId = m[1];
-	 }
-	 if (!vimeoId) return;
-   
-	 const posterUrl = holder.getAttribute('data-poster') || '';
-	 
-	 loadPlyrAssets().then(() => {
-	   holder.innerHTML = `
-		 <div class="plyr">
-		   <div class="plyr__video-embed"
-				data-plyr-provider="vimeo"
-				data-plyr-embed-id="${vimeoId}"></div>
-		 </div>
-	   `;
-	 
-	   const container = holder.querySelector('.plyr');
-	 
-	   // DOM-based poster veil
-	   if (posterUrl) {
-		 container.style.setProperty('--poster', `url("${posterUrl}")`);
-		 const veil = document.createElement('div');
-		 veil.className = 'poster-veil';
-		 container.appendChild(veil);
-	   }
-	 
-	   const el     = holder.querySelector('.plyr__video-embed');
-	   const player = new Plyr(el, {
-		 controls: ['progress','current-time','duration','fullscreen'],
-		 autoplay: true,
-		 muted: false,
-		 clickToPlay: true,
-		 hideControls: false,
-		 tooltips: { controls: false, seek: false },
-		 ratio: '16:9',
-		 storage: { enabled: false },
-		 loop: { active: true },
-		 vimeo: { dnt:true, playsinline:true, byline:false, portrait:false, title:false }
-	   });
-	 
-	   player.on('playing', () => {
-		 const veil = container.querySelector('.plyr-poster-veil');
-		 if (veil){ veil.style.opacity = '0'; setTimeout(() => veil.remove(), 550); }
-	   });
-	 
-	   const forceFullVolume = () => {
-		 try { player.muted = false; } catch {}
-		 try { player.volume = 1; } catch {}
-		 try { player.embed && player.embed.setVolume && player.embed.setVolume(1); } catch {}
-	   };
-	   player.on('ready', forceFullVolume);
-	   player.on('play',  forceFullVolume);
-	 
-	   player.play().catch(()=>{});
-	 });
-   }
+  const holder = document.querySelector('.project-page .video-embed');
+  if (!holder) return;
+
+  let vimeoId = holder.getAttribute('data-vimeo');
+  if (!vimeoId) {
+	const existing = holder.querySelector('iframe[src*="player.vimeo.com"]');
+	const m = existing && existing.src.match(/video\/(\d+)/);
+	if (m) vimeoId = m[1];
+  }
+  if (!vimeoId) return;
+
+  const posterUrl = holder.getAttribute('data-poster') || '';
+
+  loadPlyrAssets().then(() => {
+	holder.innerHTML = `
+	  <div class="plyr">
+		<div class="plyr__video-embed"
+			 data-plyr-provider="vimeo"
+			 data-plyr-embed-id="${vimeoId}"></div>
+	  </div>
+	`;
+
+	const container = holder.querySelector('.plyr');
+
+	if (posterUrl) {
+	  container.style.setProperty('--poster', `url("${posterUrl}")`);
+	  const veil = document.createElement('div');
+	  veil.className = 'poster-veil';
+	  container.appendChild(veil);
+	}
+
+	const el = holder.querySelector('.plyr__video-embed');
+	const player = new Plyr(el, {
+	  controls: ['progress','current-time','duration','fullscreen'],
+	  autoplay: true,
+	  muted: false,
+	  clickToPlay: true,
+	  hideControls: false,
+	  tooltips: { controls: false, seek: false },
+	  ratio: '16:9',
+	  storage: { enabled: false },
+	  loop: { active: true },
+	  vimeo: { dnt:true, playsinline:true, byline:false, portrait:false, title:false }
+	});
+
+	player.on('playing', () => {
+	  const veil = container.querySelector('.poster-veil');
+	  if (veil){ veil.style.opacity = '0'; setTimeout(() => veil.remove(), 1050); }
+	});
+
+	const forceFullVolume = () => {
+	  try { player.muted = false; } catch {}
+	  try { player.volume = 1; } catch {}
+	  try { player.embed?.setVolume?.(1); } catch {}
+	};
+	player.on('ready', forceFullVolume);
+	player.on('play',  forceFullVolume);
+
+	player.play().catch(()=>{});
+  });
+}
 
 (document.readyState === 'loading')
   ? document.addEventListener('DOMContentLoaded', initProjectPagePlyr)
