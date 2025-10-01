@@ -1,28 +1,50 @@
-/* ===== Smooth scroll (Lenis) ===== */
+/* global Lenis */
+/* =========================
+   Smooth scroll (Lenis)
+   ========================= */
 const lenis = new Lenis();
 function raf(t){ lenis.raf(t); requestAnimationFrame(raf); }
 requestAnimationFrame(raf);
 
-/* ===== Progress bar helpers ===== */
+/* =========================
+   Progress bar helpers
+   ========================= */
 const progressEl = document.getElementById('progress');
 let progress = 0;
-const setProgress = p => { if(progressEl){ progress = Math.max(progress, Math.min(p,1)); progressEl.style.setProperty('--progress', String(progress)); } };
-const finishProgress = () => { if(!progressEl) return; setProgress(1); progressEl.classList.add('done'); setTimeout(()=>progressEl.remove(), 600); };
+const setProgress = p => {
+  if(!progressEl) return;
+  progress = Math.max(progress, Math.min(p,1));
+  progressEl.style.setProperty('--progress', String(progress));
+};
+const finishProgress = () => {
+  if(!progressEl) return;
+  setProgress(1);
+  progressEl.classList.add('done');
+  setTimeout(()=>progressEl.remove(), 600);
+};
 
-/* ===== Utils ===== */
-const inViewport = (el, margin=0) => { const r = el.getBoundingClientRect(); return r.top < (innerHeight+margin) && r.bottom > (0 - margin) && r.left < (innerWidth+margin) && r.right > (0 - margin); };
+/* =========================
+   Utils
+   ========================= */
+const inViewport = (el, margin=0) => {
+  const r = el.getBoundingClientRect();
+  return r.top < (innerHeight+margin) && r.bottom > (0-margin) &&
+		 r.left < (innerWidth+margin) && r.right > (0-margin);
+};
 const once = (el, type) => new Promise(res => el.addEventListener(type, res, { once:true }));
 
-/* ===== Home videos (hero + tiles) ===== */
+/* =========================
+   Home videos (hero + tiles)
+   ========================= */
 function initVideos(){
-  const content   = document.querySelector('#content');                 // was .content
-  const hero      = document.querySelector('.project.hero-tile video'); // was .project.hero video
+  const content   = document.querySelector('#content');
+  const hero      = document.querySelector('.project.hero-tile video');
   const tiles     = Array.from(document.querySelectorAll('.projects .grid .project video'));
   const allVideos = [...(hero ? [hero] : []), ...tiles];
 
   setProgress(0.15);
 
-  // baseline video attributes
+  // Baseline attributes for mobile autoplay (home uses muted loops)
   allVideos.forEach(v=>{
 	v.muted = true; v.loop = true; v.playsInline = true;
 	v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
@@ -31,16 +53,18 @@ function initVideos(){
   if (hero){ hero.setAttribute('preload','auto'); hero.setAttribute('autoplay',''); }
   tiles.forEach(v=>{ v.setAttribute('preload','metadata'); v.removeAttribute('autoplay'); });
 
-  // show page once hero/first tile is renderable
+  // First render milestone (hero or first)
   const firstRenderable = hero || allVideos[0];
   if (firstRenderable){
 	(firstRenderable.readyState >= 2) ? setProgress(0.55)
 	  : firstRenderable.addEventListener('loadeddata', ()=>setProgress(0.55), { once:true });
   } else { setProgress(0.55); }
 
-  // fade in content when above-the-fold tiles are ready (cap by time)
+  // Reveal page when above-the-fold tiles are ready (or cap by time)
   const marginPx = 120;
-  const projectsInView = Array.from(document.querySelectorAll('.project')).filter(p => inViewport(p, marginPx));
+  const projectsInView = Array.from(document.querySelectorAll('.project'))
+	.filter(p => inViewport(p, marginPx));
+
   const perProjectReady = projectsInView.map(p=>{
 	const v = p.querySelector('video'); if(!v) return Promise.resolve();
 	const loaded  = (v.readyState >= 2) ? Promise.resolve() : once(v, 'loadeddata');
@@ -60,7 +84,7 @@ function initVideos(){
 	setTimeout(()=>{ if(progress < 1) finishProgress(); }, 1800);
   });
 
-  // Pause off-screen videos; play when visible
+  // Pause off-screen; play when visible
   if ('IntersectionObserver' in window){
 	const io = new IntersectionObserver((entries)=>{
 	  entries.forEach(({target:v,isIntersecting,intersectionRatio})=>{
@@ -76,7 +100,7 @@ function initVideos(){
 	(hero || allVideos[0])?.play()?.catch(()=>{});
   }
 
-  // Page visibility: pause when hidden, resume visible in view
+  // Pause all when hidden; resume visible when shown again
   document.addEventListener('visibilitychange', ()=>{
 	if(document.hidden){ allVideos.forEach(v=>v.pause()); }
 	else{
@@ -91,26 +115,46 @@ function initVideos(){
 }
 (document.readyState === 'loading') ? document.addEventListener('DOMContentLoaded', initVideos) : initVideos();
 
-/* ===== Vimeo API loader (lazy) ===== */
-function loadVimeoAPI(){
-  if (window.Vimeo && window.Vimeo.Player) return Promise.resolve();
-  return new Promise((res, rej)=>{
-	const s = document.createElement('script');
-	s.src = 'https://player.vimeo.com/api/player.js';
-	s.onload = ()=>res();
-	s.onerror = rej;
-	document.head.appendChild(s);
+/* =========================
+   Plyr assets loader (lazy)
+   ========================= */
+let plyrReady;
+function loadPlyrAssets() {
+  if (plyrReady) return plyrReady;
+  plyrReady = new Promise((resolve, reject) => {
+	// CSS
+	const cssId = 'plyr-css';
+	if (!document.getElementById(cssId)) {
+	  const link = document.createElement('link');
+	  link.id = cssId;
+	  link.rel = 'stylesheet';
+	  link.href = 'https://cdn.jsdelivr.net/npm/plyr@3/dist/plyr.css';
+	  document.head.appendChild(link);
+	}
+	// JS
+	if (window.Plyr) { resolve(); return; }
+	const script = document.createElement('script');
+	script.id = 'plyr-js';
+	script.src = 'https://cdn.jsdelivr.net/npm/plyr@3/dist/plyr.min.js';
+	script.onload = () => resolve();
+	script.onerror = reject;
+	document.head.appendChild(script);
   });
+  return plyrReady;
 }
-if ('requestIdleCallback' in window) { requestIdleCallback(() => loadVimeoAPI()); }
-else { setTimeout(() => loadVimeoAPI(), 1500); }
 
-let warmed = false;
-const warmOnce = () => { if (!warmed) { warmed = true; loadVimeoAPI(); } };
-document.addEventListener('pointerenter', (e) => { if (e.target.closest('a.project')) warmOnce(); }, { passive: true });
-document.addEventListener('touchstart',  (e) => { if (e.target.closest('a.project')) warmOnce(); }, { passive: true, once: true });
+// Warm on intent (hover/touch over tiles)
+document.addEventListener('pointerenter', (e) => {
+  if (e.target.closest('a.project')) loadPlyrAssets();
+}, { passive: true });
+document.addEventListener('touchstart',  (e) => {
+  if (e.target.closest('a.project')) loadPlyrAssets();
+}, { passive: true, once: true });
 
-/* ===== Player overlay (NO animations): instant open/close, unmuted-first, global API ===== */
+/* ============================================================
+   Player overlay (instant open/close, unmuted-first, global API)
+   Uses Plyr so controls stay inside the viewport even if video crops
+   ============================================================ */
 (() => {
   const overlay  = document.getElementById('player');
   if (!overlay) return;
@@ -153,27 +197,61 @@ document.addEventListener('touchstart',  (e) => { if (e.target.closest('a.projec
 	if ('scrollRestoration' in history) history.scrollRestoration = savedScrollRestoration;
   }
 
+  // Minimal, custom control set (tweak here)
+  const PLYR_CONTROLS = [
+	'progress',
+	'mute', 'fullscreen'
+  ];
+
   function mountPlayer(vimeoId, title){
-	const qs = new URLSearchParams({
-	  autoplay:'1', muted:'0', playsinline:'1', dnt:'1',
-	  byline:'0', title:'0', portrait:'0', pip:'1'
-	}).toString();
+	loadPlyrAssets().then(() => {
+	  // Inject Plyr container — it will create/manage the Vimeo iframe
+	  wrap.innerHTML = `
+		<div class="plyr plyr--overlay">
+		  <div class="plyr__video-embed"
+			   data-plyr-provider="vimeo"
+			   data-plyr-embed-id="${vimeoId}"
+			   title="${title || 'Video'}"></div>
+		</div>
+	  `;
 
-	wrap.innerHTML = `
-	  <iframe src="https://player.vimeo.com/video/${vimeoId}?${qs}"
-			  allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
-			  allowfullscreen title="${title}" loading="eager"></iframe>`;
-	const iframe = wrap.querySelector('iframe');
+	  const el = wrap.querySelector('.plyr__video-embed');
+	  const plyr = new Plyr(el, {
+		controls: PLYR_CONTROLS,
+		autoplay: true,
+		muted: false,
+		clickToPlay: true,
+		hideControls: false,
+		resetOnEnd: false,
+		ratio: '16:9',
+		invertTime: false,
+		storage: { enabled: false },
+		
+		// Use your own icon sprite (see section 3)
+		  // iconUrl: 'img/plyr-sprite.svg',
+		  
+		vimeo: {
+		  dnt: true,
+		  playsinline: true,
+		  byline: false,
+		  portrait: false,
+		  title: false
+		}
+	  });
+	  
+	  // Force volume to 100%
+	  const forceFullVolume = () => {
+		try { plyr.muted = false; } catch {}
+		try { plyr.volume = 1; } catch {}
+		try { plyr.embed && plyr.embed.setVolume && plyr.embed.setVolume(1); } catch {}
+	  };
+	  plyr.on('ready', forceFullVolume);
+	  plyr.on('play', forceFullVolume);
+	  
+	  plyr.play().catch(()=>{ /* rely on big play overlay if blocked */ });
 
-	loadVimeoAPI().then(()=>{
-	  const player = new Vimeo.Player(iframe);
-	  Promise.resolve()
-		.then(()=>player.setVolume(1))
-		.then(()=>player.play())
-		.catch(()=>{
-		  // rely on Vimeo’s own big Play UI if sound-autoplay is blocked
-		});
-	  wrap._player = player;
+	  // Keep a reference to destroy on close
+	  wrap._plyr = plyr;
 	});
   }
 
@@ -182,14 +260,15 @@ document.addEventListener('touchstart',  (e) => { if (e.target.closest('a.projec
 	history.pushState({ player:true }, '', url);
 
 	lockScroll();
-	overlay.hidden = false;          // pop on
+	overlay.hidden = false;  // pop on
 	mountPlayer(vimeoId, title);
   }
 
   function closeOverlay({ viaHistory=false } = {}){
-	if (wrap._player && wrap._player.unload) wrap._player.unload().catch(()=>{});
+	if (wrap._plyr && wrap._plyr.destroy) { try { wrap._plyr.destroy(); } catch {} }
+	wrap._plyr = null;
 	wrap.innerHTML = '';
-	overlay.hidden = true;           // pop off
+	overlay.hidden = true;   // pop off
 
 	if (!viaHistory && history.state?.player) {
 	  history.replaceState(null, '', openedFromURL);
@@ -197,7 +276,7 @@ document.addEventListener('touchstart',  (e) => { if (e.target.closest('a.projec
 
 	unlockScroll();
 
-	// nudge visible grid videos to repaint
+	// Nudge visible grid videos to repaint/play
 	document.querySelectorAll('.projects .grid .project video').forEach(v=>{
 	  const r = v.getBoundingClientRect();
 	  if (r.top < innerHeight && r.bottom > 0 && r.left < innerWidth && r.right > 0) {
@@ -208,22 +287,29 @@ document.addEventListener('touchstart',  (e) => { if (e.target.closest('a.projec
 
   // Tiles with data-vimeo → overlay
   document.addEventListener('click', (e)=>{
-	const a = e.target.closest('a.project'); // markup: <a class="project tile" ...>
+	const a = e.target.closest('a.project');
 	if (!a) return;
 	const id = a.dataset.vimeo;
-	if (!id) return; // normal nav otherwise
+	if (!id) return; // normal nav
 	e.preventDefault();
-	const href  = a.getAttribute('href');
+	const href  = a.getAttribute('href') || location.href;
 	const title = a.querySelector('.title')?.textContent || 'Video';
 	openOverlay(href, id, title);
   });
 
   // Close controls
-  closeBtn.addEventListener('click', ()=> closeOverlay({ viaHistory:false }));
+  closeBtn?.addEventListener('click', ()=> closeOverlay({ viaHistory:false }));
   overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closeOverlay({ viaHistory:false }); });
   window.addEventListener('popstate', ()=>{ if (!overlay.hidden) closeOverlay({ viaHistory:true }); });
-
-  // Global API for other code (e.g., header links)
+  
+  // Allow closing overlay with Escape key
+  document.addEventListener('keydown', (e) => {
+	if (e.key === 'Escape' && !overlay.hidden) {
+	  closeOverlay({ viaHistory: false });
+	}
+  });
+  
+  // Global API
   window.playerOverlay = {
 	open: openOverlay,
 	close: (opts) => closeOverlay(opts),
@@ -232,7 +318,7 @@ document.addEventListener('touchstart',  (e) => { if (e.target.closest('a.projec
 
   // Header links: close overlay first, then navigate
   document.addEventListener('click', (e) => {
-	const a = e.target.closest('.site-header a'); // was header a
+	const a = e.target.closest('.site-header a');
 	if (!a) return;
 	if (window.playerOverlay.isOpen()) {
 	  e.preventDefault();
@@ -241,3 +327,56 @@ document.addEventListener('touchstart',  (e) => { if (e.target.closest('a.projec
 	}
   });
 })();
+
+/* ===================================================
+   Project pages: auto-enhance a single video with Plyr
+   Markup: <div class="project-page"><div class="video-embed" data-vimeo="123456789"></div></div>
+   =================================================== */
+function initProjectPagePlyr(){
+  const holder = document.querySelector('.project-page .video-embed');
+  if (!holder) return;
+
+  // Resolve Vimeo ID
+  let vimeoId = holder.getAttribute('data-vimeo');
+  if (!vimeoId) {
+	const existing = holder.querySelector('iframe[src*="player.vimeo.com"]');
+	const m = existing && existing.src.match(/video\/(\d+)/);
+	if (m) vimeoId = m[1];
+  }
+  if (!vimeoId) return;
+
+  loadPlyrAssets().then(() => {
+	holder.innerHTML = `
+	  <div class="plyr">
+		<div class="plyr__video-embed"
+			 data-plyr-provider="vimeo"
+			 data-plyr-embed-id="${vimeoId}"></div>
+	  </div>
+	`;
+	const el = holder.querySelector('.plyr__video-embed');
+	const player = new Plyr(el, {
+	  controls: ['progress','fullscreen'],
+	  autoplay: true,
+	  muted: false,
+	  clickToPlay: true,
+	  hideControls: false,
+	  ratio: '16:9',
+	  storage: { enabled: false },
+	  vimeo: { dnt:true, playsinline:true, byline:false, portrait:false, title:false }
+	});
+	
+	const forceFullVolume = () => {
+	  try { player.muted = false; } catch {}
+	  try { player.volume = 1; } catch {}
+	  try { player.embed && player.embed.setVolume && player.embed.setVolume(1); } catch {}
+	};
+	player.on('ready', forceFullVolume);
+	player.on('play', forceFullVolume);
+	
+	player.play().catch(()=>{});
+  });
+}
+
+(document.readyState === 'loading')
+  ? document.addEventListener('DOMContentLoaded', initProjectPagePlyr)
+  : initProjectPagePlyr();
