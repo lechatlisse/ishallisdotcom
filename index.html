@@ -183,11 +183,14 @@
   </div><!-- .content -->
 </div><!-- .container -->
 
-<!-- Modal shell -->
-<dialog id="player-modal">
-  <button class="modal-close">✕</button>
-  <div class="player-wrap"></div>
-</dialog>
+<!-- Player overlay (no animations) -->
+<div id="player" hidden>
+  <div class="player-panel">
+	<button class="player-close">✕</button>
+	<div class="player-wrap"><!-- iframe injected here --></div>
+	<button class="tap-to-play" hidden><span>▶︎ Play with sound</span></button>
+  </div>
+</div>
 
 <script src="js/app.js" defer></script>
 </body>

@@ -109,13 +109,14 @@ const warmOnce = () => { if (!warmed) { warmed = true; loadVimeoAPI(); } };
 document.addEventListener('pointerenter', (e) => { if (e.target.closest('a.project')) warmOnce(); }, { passive: true });
 document.addEventListener('touchstart',  (e) => { if (e.target.closest('a.project')) warmOnce(); }, { passive: true, once: true });
 
-/* ===== Route-aware modal (no animations; a11y-specific focus mgmt removed) ===== */
+/* ===== Player overlay (NO ANIMATIONS): instant open/close, iframe-first, unmuted-first, global API ===== */
 (() => {
-  const modal = document.getElementById('player-modal');
-  if (!modal) return;
-
-  const wrap = modal.querySelector('.player-wrap');
-  const closeBtn = modal.querySelector('.modal-close');
+  const overlay  = document.getElementById('player');
+  if (!overlay) return;
+  const panel    = overlay.querySelector('.player-panel');
+  const wrap     = overlay.querySelector('.player-wrap');
+  const tap      = overlay.querySelector('.tap-to-play');
+  const closeBtn = overlay.querySelector('.player-close');
 
   let openedFromURL = location.href;
   let savedScrollY = 0;
@@ -152,10 +153,7 @@ document.addEventListener('touchstart',  (e) => { if (e.target.closest('a.projec
 	if ('scrollRestoration' in history) history.scrollRestoration = savedScrollRestoration;
   }
 
-  function openModal(url, vimeoId, title){
-	openedFromURL = location.href;
-	history.pushState({ modal:true }, '', url);
-
+  function mountPlayer(vimeoId, title){
 	const qs = new URLSearchParams({
 	  autoplay:'1', muted:'0', playsinline:'1', dnt:'1',
 	  byline:'0', title:'0', portrait:'0', pip:'1'
@@ -164,14 +162,8 @@ document.addEventListener('touchstart',  (e) => { if (e.target.closest('a.projec
 	wrap.innerHTML = `
 	  <iframe src="https://player.vimeo.com/video/${vimeoId}?${qs}"
 			  allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
-			  allowfullscreen title="${title}" loading="eager"></iframe>
-	  <button class="tap-to-play" hidden><span>▶️ Play with sound</span></button>`;
-
+			  allowfullscreen title="${title}" loading="eager"></iframe>`;
 	const iframe = wrap.querySelector('iframe');
-	const tap    = wrap.querySelector('.tap-to-play');
-
-	lockScroll();
-	modal.showModal();
 
 	loadVimeoAPI().then(()=>{
 	  const player = new Vimeo.Player(iframe);
@@ -179,39 +171,80 @@ document.addEventListener('touchstart',  (e) => { if (e.target.closest('a.projec
 		.then(()=>player.setVolume(1))
 		.then(()=>player.play())
 		.catch(()=>{
+		  // If you removed the CTA button, you can delete this whole catch block.
+		  if (!tap) return;
 		  tap.hidden = false;
-		  tap.addEventListener('click', ()=>{ tap.hidden = true; player.play(); }, { once:true });
+		  tap.onclick = () => { tap.hidden = true; player.play(); };
 		});
 	  wrap._player = player;
 	});
   }
 
-  function closeModal({ viaHistory=false } = {}){
-	if (!modal.open) return;
+  function openOverlay(url, vimeoId, title){
+	openedFromURL = location.href;
+	history.pushState({ player:true }, '', url);
 
+	lockScroll();
+	overlay.hidden = false;          // POP ON
+
+	mountPlayer(vimeoId, title);
+  }
+
+  function closeOverlay({ viaHistory=false } = {}){
+	// Tear down player & overlay immediately
 	if (wrap._player && wrap._player.unload) wrap._player.unload().catch(()=>{});
 	wrap.innerHTML = '';
-	modal.close();
+	overlay.hidden = true;           // POP OFF
 
-	if (!viaHistory && history.state?.modal) {
+	// Restore URL without navigation if we pushed a state
+	if (!viaHistory && history.state?.player) {
 	  history.replaceState(null, '', openedFromURL);
 	}
 
 	unlockScroll();
+
+	// Nudge visible grid videos to repaint (prevents idle frame)
+	document.querySelectorAll('.grid .project video').forEach(v=>{
+	  const r = v.getBoundingClientRect();
+	  if (r.top < innerHeight && r.bottom > 0 && r.left < innerWidth && r.right > 0) {
+		const p = v.play(); if (p && p.catch) p.catch(()=>{});
+	  }
+	});
   }
 
+  // Intercept clicks on tiles with data-vimeo → open overlay
   document.addEventListener('click', (e)=>{
 	const a = e.target.closest('a.project');
-	if(!a) return;
+	if (!a) return;
 	const id = a.dataset.vimeo;
-	if(!id) return;
+	if (!id) return; // links without data-vimeo navigate normally
 	e.preventDefault();
 	const href  = a.getAttribute('href');
 	const title = a.querySelector('.title')?.textContent || 'Video';
-	openModal(href, id, title);
+	openOverlay(href, id, title);
   });
 
-  closeBtn.addEventListener('click', ()=> closeModal({ viaHistory:false }));
-  modal.addEventListener('cancel', (e)=>{ e.preventDefault(); closeModal({ viaHistory:false }); });
-  window.addEventListener('popstate', ()=>{ if (modal.open) closeModal({ viaHistory:true }); });
+  // Close controls
+  closeBtn.addEventListener('click', ()=> closeOverlay({ viaHistory:false }));
+  overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closeOverlay({ viaHistory:false }); });
+  window.addEventListener('popstate', ()=>{ if (!overlay.hidden) closeOverlay({ viaHistory:true }); });
+
+  // === Export a tiny global API so other code (header links, etc.) can close/open reliably ===
+  window.playerOverlay = {
+	open: openOverlay,
+	close: (opts) => closeOverlay(opts),
+	isOpen: () => !overlay.hidden
+  };
+
+  // === Header link handler: if overlay is open, close then navigate ===
+  document.addEventListener('click', (e) => {
+	const a = e.target.closest('header a');
+	if (!a) return;
+
+	if (window.playerOverlay.isOpen()) {
+	  e.preventDefault();
+	  window.playerOverlay.close({ viaHistory: false });
+	  location.href = a.href;
+	}
+  });
 })();
