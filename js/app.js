@@ -113,13 +113,13 @@ function loadPlyrAssets() {
 	  const link = document.createElement('link');
 	  link.id = cssId;
 	  link.rel = 'stylesheet';
-	  link.href = 'https://cdn.jsdelivr.net/npm/plyr@3/dist/plyr.css';
+	  link.href = '/css/plyr.min.css';  // Changed from CDN to local
 	  document.head.appendChild(link);
 	}
 	if (window.Plyr) { resolve(); return; }
 	const script = document.createElement('script');
 	script.id = 'plyr-js';
-	script.src = 'https://cdn.jsdelivr.net/npm/plyr@3/dist/plyr.min.js';
+	script.src = '/js/plyr.min.js';  // Changed from CDN to local
 	script.onload = () => resolve();
 	script.onerror = reject;
 	document.head.appendChild(script);
@@ -145,6 +145,11 @@ document.addEventListener('touchstart',  (e) => {
   let openedFromURL = location.href;
   let savedScrollY = 0;
   let savedScrollRestoration = 'auto';
+  
+  // Cache for reusing player
+  let cachedPlayer = null;
+  let cachedVimeoId = null;
+  let cachedContainer = null;
 
   function getScrollbarWidth(){ return window.innerWidth - document.documentElement.clientWidth; }
 
@@ -177,6 +182,27 @@ document.addEventListener('touchstart',  (e) => {
   }
 
   function mountPlayer(vimeoId, title, posterUrl){
+	// If reopening same video, just replay it
+	if (cachedVimeoId === vimeoId && cachedPlayer && cachedContainer) {
+	  if (!cachedContainer.isConnected) {
+		wrap.appendChild(cachedContainer);
+	  }
+	  
+	  cachedPlayer.restart();
+	  cachedPlayer.play().catch(()=>{});
+	  
+	  try { cachedPlayer.muted = false; } catch {}
+	  try { cachedPlayer.volume = 1; } catch {}
+	  try { cachedPlayer.embed?.setVolume?.(1); } catch {}
+	  
+	  return;
+	}
+  
+	// Different video - destroy old player
+	if (cachedPlayer && cachedPlayer.destroy) {
+	  try { cachedPlayer.destroy(); } catch {}
+	}
+  
 	loadPlyrAssets().then(() => {
 	  wrap.innerHTML = `
 		<div class="plyr plyr--overlay">
@@ -186,10 +212,10 @@ document.addEventListener('touchstart',  (e) => {
 			   title="${title || 'Video'}"></div>
 		</div>
 	  `;
-
+  
 	  const container = wrap.querySelector('.plyr');
 	  const el = container.querySelector('.plyr__video-embed');
-
+  
 	  const player = new Plyr(el, {
 		controls: ['progress','current-time','duration','mute','fullscreen'],
 		autoplay: true,
@@ -202,49 +228,52 @@ document.addEventListener('touchstart',  (e) => {
 		loop: { active: true },
 		vimeo: { dnt:true, playsinline:true, byline:false, portrait:false, title:false }
 	  });
-
+  
+	  // CRITICAL: Cache immediately after creation, before any async events
+	  cachedPlayer = player;
+	  cachedVimeoId = vimeoId;
+	  cachedContainer = container;
+	  wrap._plyr = player;
+  
 	  player.on('ready', () => {
 		requestAnimationFrame(() => {
 		  requestAnimationFrame(() => {
 			if (posterUrl) {
-			  // Find the video embed container (not the main plyr container)
 			  const videoEmbed = container.querySelector('.plyr__video-embed');
 			  
 			  const veil = document.createElement('div');
 			  veil.className = 'poster-veil';
 			  veil.style.backgroundImage = `url("${posterUrl}")`;
 			  
-			  // Append to video embed, not to main container
 			  if (videoEmbed) {
 				videoEmbed.appendChild(veil);
 			  } else {
-				container.prepend(veil); // Fallback
+				container.prepend(veil);
 			  }
-	  
+  
 			  const fade = () => {
 				veil.style.opacity = '0';
 				setTimeout(() => veil.remove(), 1050);
 			  };
-	  
+  
 			  player.on('playing', fade);
-			  setTimeout(() => { if (veil.isConnected) fade(); }, 2000);
+			  setTimeout(() => { if (veil.isConnected) fade(); }, 3500);
 			}
-	  
+  
 			try { player.muted = false; } catch {}
 			try { player.volume = 1; } catch {}
 			try { player.embed?.setVolume?.(1); } catch {}
 		  });
 		});
 	  });
-
+  
 	  player.on('play', () => {
 		try { player.muted = false; } catch {}
 		try { player.volume = 1; } catch {}
 		try { player.embed?.setVolume?.(1); } catch {}
 	  });
-
+  
 	  player.play().catch(()=>{});
-	  wrap._plyr = player;
 	});
   }
 
@@ -257,17 +286,24 @@ document.addEventListener('touchstart',  (e) => {
   }
 
   function closeOverlay({ viaHistory=false } = {}){
-	if (wrap._plyr && wrap._plyr.destroy) { try { wrap._plyr.destroy(); } catch {} }
-	wrap._plyr = null;
-	wrap.innerHTML = '';
+	// Pause both cached player AND any player in wrap
+	if (cachedPlayer) {
+	  try { cachedPlayer.pause(); } catch {}
+	}
+	
+	// Fallback: also check wrap._plyr in case caching hasn't completed
+	if (wrap._plyr) {
+	  try { wrap._plyr.pause(); } catch {}
+	}
+	
 	overlay.hidden = true;
-
+  
 	if (!viaHistory && history.state?.player) {
 	  history.replaceState(null, '', openedFromURL);
 	}
-
+  
 	unlockScroll();
-
+  
 	document.querySelectorAll('.projects .grid .project video').forEach(v=>{
 	  const r = v.getBoundingClientRect();
 	  if (r.top < innerHeight && r.bottom > 0 && r.left < innerWidth && r.right > 0) {
