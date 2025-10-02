@@ -19,14 +19,22 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<base href="/">
+	<link rel="preload" as="image" href="/img/hero-fallback.jpg" fetchpriority="high">
+	
   <!-- CSS (use relative paths unless you need a subfolder prefix) -->
   <link rel="stylesheet" href="/css/modern-normalize.min.css">
   <link rel="stylesheet" href="/css/main.css">
 
-  <!-- Connection hints for faster video -->
+  <!-- keep your preconnects -->
   <link rel="preconnect" href="https://player.vimeo.com" crossorigin>
   <link rel="preconnect" href="https://i.vimeocdn.com" crossorigin>
   <link rel="preconnect" href="https://f.vimeocdn.com" crossorigin>
+  
+  <!-- warm bytes; no extra execution -->
+  <link rel="preload" as="script" href="https://player.vimeo.com/api/player.js" crossorigin>
+  <link rel="preload" as="style"  href="/css/plyr.min.css">
+  <link rel="preload" as="script" href="/js/plyr.min.js">
 
   <!-- Optional warmups (speeds up first play) -->
   <!-- <link rel="preload" as="script" href="../js/plyr.min.js"> -->
@@ -59,7 +67,8 @@
 	<!-- This hook is what app.js looks for -->
 	<div class="video-embed"
 		 data-vimeo="469961565"
-		 data-poster="/img/between-two-years-poster.jpg"></div>
+		 data-poster="/img/hero-fallback.jpg"
+		 data-title="Between Two Years"></div>
   </main>
 
   <!-- Load your site JS; it will pull Plyr and build the player -->

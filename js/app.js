@@ -32,9 +32,13 @@
   };
 
   // Lenis + RAF
-  const lenis = new Lenis();
-  const raf = (t) => { lenis.raf(t); requestAnimationFrame(raf); };
-  requestAnimationFrame(raf);
+  // Lenis (optional) + RAF loop
+  let lenis = null;
+  if (window.Lenis) {
+	lenis = new Lenis();
+	const raf = (t) => { lenis.raf(t); requestAnimationFrame(raf); };
+	requestAnimationFrame(raf);
+  }
 
   /* =========================================================================
    * 1) TINY UTILS
@@ -52,6 +56,33 @@
 	try { player.volume = 1; } catch {}
 	try { player.embed?.setVolume?.(1); } catch {}
   };
+  
+  // Build a centered overlay. Returns the wrapper element.
+  // Pass `ctaText` only on static pages (e.g., "Click to play").
+  function makeTitleOverlay(container, titleText, ctaText) {
+	const wrap  = document.createElement('div');
+	wrap.className = 'player-title';
+	wrap.style.pointerEvents = 'none';
+  
+	const inner = document.createElement('div');
+	inner.className = 'player-title__inner';
+  
+	const titleEl = document.createElement('div');
+	titleEl.className = 'player-title__text';
+	titleEl.textContent = titleText || '';
+	inner.appendChild(titleEl);
+  
+	if (ctaText) {
+	  const subEl = document.createElement('div');
+	  subEl.className = 'player-title__sub';
+	  subEl.textContent = ctaText;
+	  inner.appendChild(subEl);
+	}
+  
+	wrap.appendChild(inner);
+	container.appendChild(wrap);
+	return wrap;
+  }
 
   /* =========================================================================
    * 2) TOP PROGRESS BAR (driven by videos + load)
@@ -227,6 +258,13 @@
 	return { load };
   })();
 
+  // Eager warm once DOM is ready (improves first modal open)
+  if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', () => PlyrAssets.load());
+  } else {
+	PlyrAssets.load();
+  }
+
   /* =========================================================================
    * 5) OVERLAY PLAYER (modal) — Vimeo via Plyr, scroll lock, history
    * ======================================================================= */
@@ -279,9 +317,24 @@
 	  // reuse same video if possible
 	  if (cachedVimeoId === vimeoId && cachedPlayer && cachedContainer) {
 		if (!cachedContainer.isConnected) wrap.appendChild(cachedContainer);
+	  
+		// 🔧 Reset or (re)create the title overlay for this open
+		if (title) {
+		  let t = $('.player-title', cachedContainer);
+		  if (t) {
+			// update text and unhide
+			const tx = $('.player-title__text', t);
+			if (tx) tx.textContent = title;
+			t.classList.remove('is-hidden');
+			setTimeout(() => t.classList.add('is-hidden'), 3000);
+		  } else {
+			const titleEl = makeTitleOverlay(cachedContainer, title);
+			setTimeout(() => titleEl.classList.add('is-hidden'), 3000);
+		  }
+		}
+	  
 		cachedPlayer.restart?.();
 		cachedPlayer.play?.()?.catch?.(() => {});
-		forceFullVolume(cachedPlayer);
 		return;
 	  }
 
@@ -309,7 +362,7 @@
 		const player = new Plyr(el, {
 		  controls: ['progress','current-time','duration','mute','fullscreen'],
 		  autoplay: true,
-		  muted:   false,
+		  muted:   true,
 		  clickToPlay: true,
 		  hideControls: false,
 		  tooltips: { controls: false, seek: false },
@@ -318,12 +371,21 @@
 		  loop: { active: true },
 		  vimeo: { dnt: true, playsinline: true, byline: false, portrait: false, title: false }
 		});
-
+		
+		// Title overlay over poster + video (fades after 3s of playback)
+		if (title) {
+		  const titleEl = makeTitleOverlay(container, title);
+		  player.on('playing', () => {
+			setTimeout(() => titleEl.classList.add('is-hidden'), 3000);
+		  });
+		}
+		
 		// cache immediately
 		cachedPlayer = player;
 		cachedVimeoId = vimeoId;
 		cachedContainer = container;
 
+		// Poster veil (fade on 'playing' or safety timeout)
 		player.on('ready', () => {
 		  if (posterUrl) {
 			try {
@@ -332,7 +394,7 @@
 			  veil.className = 'poster-veil';
 			  veil.style.backgroundImage = `url("${posterUrl}")`;
 			  (videoEmbed || container).appendChild(veil);
-		
+
 			  const fade = () => {
 				veil.style.opacity = '0';
 				setTimeout(() => veil.remove(), POSTER_FADE_MS + 50);
@@ -343,12 +405,22 @@
 			  console.warn('Poster veil setup failed:', e);
 			}
 		  }
-		
-		  forceFullVolume(player);
+
+		  // Try to start; if blocked, we'll recover on first gesture
+		  player.play()?.catch(() => {});
 		});
 
-		player.on('play', () => forceFullVolume(player));
-		player.play?.()?.catch?.(() => {});
+		// Set 100% volume/unmute only once frames are rendering
+		player.on('playing', () => { forceFullVolume(player); });
+
+		// One-time user-gesture rescue (desktop/mobile)
+		const resumeOnGesture = () => {
+		  if (!overlay.hidden && player?.paused) {
+			player.play()?.then(() => forceFullVolume(player)).catch(() => {});
+		  }
+		  document.removeEventListener('pointerdown', resumeOnGesture, true);
+		};
+		document.addEventListener('pointerdown', resumeOnGesture, true);
 	  });
 	}
 
@@ -431,44 +503,47 @@
 	return { open, close, isOpen: () => !overlay.hidden };
   })();
 
-  /* =========================================================================
-   * 6) PROJECT PAGE PLYR (loop + poster veil)
+/* =========================================================================
+   * 6) PROJECT PAGE PLYR (prime 1 frame, no UI autoplay)
    * ======================================================================= */
   (function ProjectPagePlyr() {
-	const holder = $(SEL.pageVideo);
+	const holder = $(SEL.pageVideo);              // .project-page .video-embed
 	if (!holder) return;
-
+  
+	// data-vimeo / poster / title
 	let vimeoId = holder.getAttribute('data-vimeo');
 	if (!vimeoId) {
-	  const existing = $('iframe[src*="player.vimeo.com"]', holder);
-	  const m = existing?.src.match(/video\/(\d+)/);
-	  if (m) vimeoId = m[1];
+	  const ifr = $('iframe[src*="player.vimeo.com"]', holder);
+	  const m = ifr?.src.match(/video\/(\d+)/); if (m) vimeoId = m[1];
 	}
 	if (!vimeoId) return;
-
 	const posterUrl = holder.getAttribute('data-poster') || '';
-
+	const titleText = holder.getAttribute('data-title') || (document.title.replace(/\s*—.*$/, '') || '');
+  
 	PlyrAssets.load().then(() => {
 	  holder.innerHTML = `
 		<div class="plyr">
-		  <div class="plyr__video-embed"
-			   data-plyr-provider="vimeo"
-			   data-plyr-embed-id="${vimeoId}"></div>
+		  <div class="plyr__video-embed" data-plyr-provider="vimeo" data-plyr-embed-id="${vimeoId}"></div>
 		</div>
 	  `;
-
 	  const container = $('.plyr', holder);
+  
+	  // poster veil: append immediately for reliability, prefetch in parallel
 	  if (posterUrl) {
-		container.style.setProperty('--poster', `url("${posterUrl}")`);
 		const veil = document.createElement('div');
 		veil.className = 'poster-veil';
+		veil.style.backgroundImage = `url("${posterUrl}")`;
 		container.appendChild(veil);
+	  
+		// optional parallel prefetch (doesn't gate DOM append)
+		const img = new Image();
+		img.src = posterUrl;
 	  }
-
+  
 	  const el = $('.plyr__video-embed', holder);
 	  const player = new Plyr(el, {
-		controls: ['progress','current-time','duration','fullscreen'],
-		autoplay: true,
+		controls: ['progress','current-time','mute','duration','fullscreen'],
+		autoplay: false,
 		muted: false,
 		clickToPlay: true,
 		hideControls: false,
@@ -478,18 +553,73 @@
 		loop: { active: true },
 		vimeo: { dnt: true, playsinline: true, byline: false, portrait: false, title: false }
 	  });
-
+  
+	  // centered title + CTA
+	  const titleText =
+		holder.getAttribute('data-title') ||
+		document.title.replace(/\s*—.*$/, '') || '';
+	  const titleEl = makeTitleOverlay(container, titleText, 'Click to play');
+  
+	  // prime: run to first decoded frame muted, then pause > 0s
+	  let userClicked = false;
+	  player.on('ready', () => {
+		try { player.muted = true; } catch {}
+		player.play()?.then(() => {
+		  const onPrimed = () => {
+			if (userClicked) return player.off('playing', onPrimed);
+			requestAnimationFrame(() => {
+			  try { if (player.currentTime < 0.05) player.currentTime = 0.05; } catch {}
+			  try { player.pause(); } catch {}
+			  player.off('playing', onPrimed);
+			});
+		  };
+		  player.on('playing', onPrimed);
+		}).catch(() => {});
+	  });
+  
+	  // first pointer: hide title immediately, unmute+play, swallow that click once
+	  const onPointerFirst = (ev) => {
+		if (ev.target.closest('.plyr__controls')) return;
+		userClicked = true;
+	  
+		// swallow next click so Plyr doesn't toggle pause
+		const block = (e) => { e.preventDefault(); e.stopImmediatePropagation(); e.stopPropagation(); };
+		container.addEventListener('click', block, { capture: true, once: true });
+	  
+		// hide CTA line instantly (title stays for now)
+		const cta = titleEl.querySelector('.player-title__sub');
+		if (cta) cta.classList.add('is-hidden');
+	  
+		// unmute to full + play
+		try { player.muted = false; } catch {}
+		try { player.volume = 1; } catch {}
+		try { player.embed?.setVolume?.(1); } catch {}
+		player.play()?.catch(() => {});
+	  
+		container.removeEventListener('pointerdown', onPointerFirst, true);
+	  };
+	  container.addEventListener('pointerdown', onPointerFirst, true);
+  
+	  // when frames render: fade poster, enforce full volume
 	  player.on('playing', () => {
-		const veil = $('.poster-veil', container);
+		if (!userClicked) return; // ignore priming 'playing'
+	  
+		// fade poster now that real frames are on-screen
+		const veil = container.querySelector('.poster-veil');
 		if (veil) {
 		  veil.style.opacity = '0';
 		  setTimeout(() => veil.remove(), POSTER_FADE_MS + 50);
 		}
+	  
+		// fade out the title text 3s later
+		const titleTextEl = titleEl.querySelector('.player-title__text');
+		if (titleTextEl) {
+		  setTimeout(() => titleTextEl.classList.add('is-hidden'), 3000);
+		}
+	  
+		// full volume once user-initiated playback is running
+		forceFullVolume(player);
 	  });
-
-	  player.on('ready', () => forceFullVolume(player));
-	  player.on('play',  () => forceFullVolume(player));
-	  player.play()?.catch?.(() => {});
 	});
   })();
 

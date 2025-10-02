@@ -253,6 +253,35 @@ a{ color:inherit; text-decoration:none }
   backdrop-filter:blur(6px);
 }
 
+/* ===== Shared player title overlay (modal & project pages) ===== */
+.player-title{
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  text-align:center; color:#fff;
+  padding:clamp(12px,2vw,32px);
+  z-index:4;                    /* poster=1, controls=3; title sits above both */
+  pointer-events:none;          /* never blocks clicks */
+  opacity:1; transition:opacity .5s ease;
+}
+.player-title.is-hidden{ opacity:0 }
+
+.player-title__inner{ max-width:min(90ch, 80vw) }
+.player-title__text{
+  font-weight:700; letter-spacing:.01em; line-height:1.1;
+  font-size:clamp(1.3rem, 2.6vw + .4rem, 3.2rem);
+}
+.player-title__sub{
+  margin-top:.45em; font-weight:500; opacity:.9;
+  font-size:clamp(.95rem, 1.2vw + .3rem, 1.25rem);
+}
+
+/* smooth fades for title / cta (target modal-style classes) */
+.player-title__text { transition: opacity .5s ease; }
+.player-title__sub  { transition: opacity .3s ease; opacity: 1; }
+
+/* utility class we toggle from JS */
+.player-title .is-hidden { opacity: 0; }
+
 /* Lock page scroll while overlay is open */
 html.modal-open,body.modal-open{ overflow:hidden }
 
@@ -338,6 +367,139 @@ html.modal-open,body.modal-open{ overflow:hidden }
 .plyr__progress progress::-moz-progress-bar{ border-radius:0 !important }
 
 /* ===== Project page variant ===== */
-.project-page .video-embed{ position:relative; aspect-ratio:16/9; background:#000 }
+.qqqproject-page .video-embed{ position:relative; aspect-ratio:16/9; background:#000 }
 .project-page .video-embed .plyr{ position:absolute; inset:0 }
 .project-page .video-embed .plyr__video-embed{ position:absolute; inset:0; z-index:1 }
+
+/* ===== Project page variant (full-bleed like the modal) ===== */
+.project-page { min-height: 100vh; }
+
+.project-page .video-embed{
+  position: fixed; inset: 0;
+  background:#000;
+}
+
+.project-page .video-embed .plyr{ position:absolute; inset:0; }
+
+.project-page .video-embed .plyr__video-embed{
+  position:absolute; top:50%; left:50%;
+  right:auto; bottom:auto;                    /* <-- neutralize earlier inset */
+  width:max(100vw, calc(100vh * 16 / 9));
+  height:max(100vh, calc(100vw * 9 / 16));
+  transform:translate(-50%, -50%);
+  z-index:1;
+}
+
+.project-page .plyr__controls{
+  padding: clamp(8px, 1.6vw, 14px);
+}
+
+/* ========= INFO PAGE THEME ========= */
+.page-info {
+  --info-bg: #f4f2eb;        /* page bg */
+  --info-fg: #121212;        /* text color */
+  --sweep-color: #fdfed0;    /* your existing accent */
+}
+
+.page-info { background: var(--info-bg); color: var(--info-fg); }
+
+/* Make header/nav dark on this page (no background) */
+.page-info .site-header,
+.page-info .site-header a,
+.page-info .brand,
+.page-info .site-nav .nav-link,
+.page-info .nav-toggle { color: var(--info-fg); }
+
+/* ========= INFO LAYOUT ========= */
+.info {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 80px 40px;         /* keeps clear of header on small screens */
+}
+
+.info__wrap {
+  width: 70vw;                /* as requested */
+  max-width: 1100px;
+  display: grid;
+  gap: 32px;
+}
+
+/* Typography — same size across breakpoints (no fluid scaling) */
+.info__lead,
+.info__links { 
+  font-size: 16px;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+}
+
+/* Horizontal link paragraphs */
+.info__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+}
+
+/* ========= Sweep-bar hover (reuses your nav feel) ========= */
+/* Clean one-way sweep for Info links */
+.page-info .sweep-link{
+  position: relative;
+  display: inline-block;
+  color: inherit;
+  text-decoration: none;
+  padding: 0 6px;
+  z-index: 0;                   /* slightly larger hit area */
+}
+
+.page-info .sweep-link::after{
+  z-index: -1;
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 5px;
+  width: calc(100% + 14px);          /* word width + 7px each side */
+  transform: translate(-50%, -50%);
+  background: var(--sweep-color, #fdfed0);
+  border-radius: 3px;
+
+  /* Hidden at rest; prevents any sliver from showing */
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path var(--nav-sweep, 320ms) cubic-bezier(.7,0,.3,1);
+  pointer-events: none;
+}
+
+.page-info .sweep-link:hover::after{
+  /* Sweep left → right once */
+  clip-path: inset(0 0 0 0);
+}
+
+/* Mobile: keep 70vw feel but never go edge-to-edge */
+@media (max-width: 720px) {
+  .info__wrap { width: 86vw; }
+  .info__links { gap: 16px; }
+}
+
+/* Info page layout & centering */
+.page-info .info { 
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 80px 40px;
+}
+
+.page-info .info__wrap{
+  width: 70vw;
+  max-width: 1100px;
+  display: grid;
+  gap: 32px;
+  text-align: center;         /* center paragraph text */
+}
+
+/* Link rows centered */
+.page-info .info__links{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  justify-content: center;    /* center the horizontal lists */
+}
