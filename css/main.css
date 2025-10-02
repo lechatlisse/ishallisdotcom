@@ -9,6 +9,7 @@
   --gap: clamp(12px, 2vw, 28px);
   --radius: 3px;
   --header-h: 50px;
+  --nav-sweep: 0.4s;
 
   --z-progress: 10100;
   --z-header: 10050;
@@ -82,25 +83,88 @@ a{ color:inherit; text-decoration:none }
      text-decoration: none;
    }
    
-   .brand{ font-weight: 600; padding: 8px 0; }
-   .nav-link{ padding: 8px 0; transition: opacity .2s; }
-   .nav-link:hover{ opacity: .75; }
+   .brand{ font-weight: 400; padding: 8px 0; }
+   
+
+   /* Links/brand share the same hit-area and layout behavior */
+   .nav-link, .brand{
+     display: inline-block;            /* gives us a reliable width */
+     position: relative;
+     overflow: hidden;                 /* clip sweep edges */
+     color:#fff;
+     font-size:16px; line-height:1; text-decoration:none;
+     transition: opacity .2s;
+   
+     /* bigger hit area without shifting layout */
+     --hit-x: 10px;
+     --hit-y: 6px;
+     padding: calc(8px + var(--hit-y)) var(--hit-x);
+     margin: calc(-1 * var(--hit-y)) calc(-1 * var(--hit-x));
+   }
+   .nav-link:hover, .brand:hover{ opacity:.75; }
+   
+   /* ===== HOVER SWEEP (clip-path) =====
+      Hidden at rest. On hover we reveal left→right.
+      No reverse on mouseout because only :hover sets a transition. */
+   .nav-link::before,
+   .brand::before{
+     content:"";
+     position:absolute; top:50%; left:50%;
+     height:5px;
+     width: calc(100% - (2 * var(--hit-x,10px)) + 14px); /* text width +14px */
+     background:#fdfed0;
+     border-radius:3px;
+     z-index:-1; pointer-events:none;
+   
+     /* fully hidden, but already positioned under the word */
+     clip-path: inset(0 100% 0 0);   /* hide the right side completely */
+     transform: translate(-50%, -50%);
+   }
+   
+   /* reveal left → right once; no reverse on mouseout */
+   .nav-link:not(.is-current):hover::before,
+   .brand:hover::before{
+     clip-path: inset(0 0 0 0);
+     transition: clip-path var(--nav-sweep) cubic-bezier(.7,0,.3,1);
+   }
+   
+   /* don’t run the hover sweep on the current item */
+   .nav-link.is-current::before{ display:none; }
+   
+   /* ===== CURRENT PAGE (static bar) ===== */
+   .nav-link.is-current{ z-index:0; }
+   .nav-link.is-current::after{
+     content:"";
+     position:absolute; left:50%; top:50%;
+     transform: translate(-50%, -50%);
+     height:5px;
+     width: calc(100% - (2 * var(--hit-x,10px)) + 14px); /* text width +14px */
+     background:#fdfed0;
+     border-radius:3px;
+     z-index:-1;
+   }
+   
+   /* Mobile panel: no sweep/active bars (optional) */
+   @media (max-width:800px){
+     .nav-link::before, .brand::before,
+     .nav-link.is-current::after{ display:none; }
+   }
+   
+   .menu-close{ display:none; }
+   
+   /* On small screens you can hide the indicator (menu has its own background) */
+   @media (max-width:800px){
+     .nav-link.is-current::after{ display:none; }
+   }
    
    /* “Menu” toggle (hidden on desktop) */
    .nav-toggle{
      display: none; border: 0; background: transparent; padding: 6px 0; cursor: pointer;
    }
-   
-   /* Scrim: hidden by default so nothing dark sits behind header */
-   .nav-scrim{
-     display: none;
-     position: fixed; inset: 0;
-     background: rgba(0,0,0,.35);
-     opacity: 0; pointer-events: none;
-     transition: opacity .25s ease;
-   }
+  
    
    /* ============ Mobile ============ */
+   
    @media (max-width: 800px){
      /* brand stays; “Menu” appears at right */
      .nav-toggle{ display: inline-block; margin-left: auto; }
@@ -108,15 +172,24 @@ a{ color:inherit; text-decoration:none }
      /* same .links becomes a right slide-out panel; only as tall as its content */
      .links{
        display: flex; flex-direction: column; gap: 10px;
-       position: fixed; top: 12px; right: 40px;    /* respects header padding */
+       position: fixed; top: 15px; right: 15px;    /* respects header padding */
        width: max-content; min-width: 200px;
        padding: 16px 22px;
-       background: rgba(10,10,10,.96);             /* panel has a background */
+       background: #fdfed0;             /* panel has a background */
        border-radius: 6px;
        transform: translateX(120%);                /* off-canvas by default */
        transition: transform .28s ease;
      }
-     .nav-link{ color:#fff; padding: 10px 2px; text-align: left; }
+     .nav-link{ color:#000; padding: 10px 2px; text-align: left; }
+     
+     .menu-close{
+       position:absolute; top:8px; right:8px;
+       width:34px; height:34px;          /* bigger hit target */
+       border:0; border-radius:6px;
+       background:rgba(0,0,0,.08);
+       color:#000; font-size:20px; line-height:34px; text-align:center;
+       cursor:pointer;
+     }
    }
    
    /* Open state (toggled on <html>) */

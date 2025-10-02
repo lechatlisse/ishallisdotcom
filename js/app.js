@@ -495,81 +495,38 @@ function initProjectPagePlyr(){
   ? document.addEventListener('DOMContentLoaded', initProjectPagePlyr)
   : initProjectPagePlyr();
   
-(() => {
-	const btn   = document.querySelector('[data-nav-toggle]');
-	const links = document.querySelector('[data-links]');
-	const scrim = document.querySelector('[data-scrim]');
-	if (!btn || !links || !scrim) return;
+/* NAV toggle (desktop+mobile) */
+  (() => {
+	const btn    = document.querySelector('[data-nav-toggle]');
+	const links  = document.querySelector('[data-links]');
+	const closer = document.querySelector('[data-nav-close]'); // the × inside the panel
+	if (!btn || !links) return;
   
-	const toggle = () => document.documentElement.classList.toggle('nav-open');
+	const open   = () => document.documentElement.classList.add('nav-open');
 	const close  = () => document.documentElement.classList.remove('nav-open');
+	const toggle = () => document.documentElement.classList.toggle('nav-open');
   
 	btn.addEventListener('click', toggle);
-	scrim.addEventListener('click', close);
+	closer?.addEventListener('click', close);
   
-	// Close after tapping any link (mobile only)
+	// Close after tapping a link (mobile only)
 	links.addEventListener('click', (e) => {
 	  if (window.matchMedia('(max-width: 800px)').matches && e.target.closest('a')) close();
 	});
-  })();
   
-  // === NAV LETTER SCRAMBLE (desktop only) ==========================
-  (() => {
-	const supportsHover = matchMedia('(hover: hover) and (pointer: fine)').matches;
-	if (!supportsHover) return;
+	// >>> ADD THIS GUARD HERE <<<
+	// Close when clicking/touching outside the panel (no scrim)
+	document.addEventListener('pointerdown', (e) => {
+	  if (!document.documentElement.classList.contains('nav-open')) return;
+	  const target = e.target;
+	  // ignore clicks on panel or on the toggle button
+	  if (!links.contains(target) && !btn.contains(target)) close();
+	}, { passive: true });
   
-	const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-	const getRand = (s) => s[(Math.random() * s.length) | 0];
-  
-	// Keep each link the same width during the effect to avoid layout shift
-	window.addEventListener('load', () => {
-	  document.querySelectorAll('.nav-link').forEach(el => {
-		el.style.minWidth = el.offsetWidth + 'px';
-	  });
-	});
-  
-	function scramble(el, duration = 300) {
-	  if (el._raf) cancelAnimationFrame(el._raf);
-  
-	  const original = (el.dataset.text = el.dataset.text || el.textContent);
-	  const len = original.length;
-	  const start = performance.now();
-  
-	  const tick = (now) => {
-		const t = Math.min(1, (now - start) / duration);
-		const reveal = Math.floor(t * len);
-		let out = '';
-  
-		for (let i = 0; i < len; i++) {
-		  const ch = original[i];
-		  if (i < reveal || /\s/.test(ch)) {
-			out += ch;                 // already revealed or space
-		  } else {
-			const pool = /[A-Z]/.test(ch) ? GLYPHS : GLYPHS.toLowerCase();
-			out += getRand(pool);
-		  }
-		}
-  
-		el.textContent = out;
-  
-		if (t < 1) {
-		  el._raf = requestAnimationFrame(tick);
-		} else {
-		  el.textContent = original;   // settle exactly to the original
-		  el._raf = null;
-		}
-	  };
-  
-	  el._raf = requestAnimationFrame(tick);
-	}
-  
-	document.querySelectorAll('.nav-link').forEach((el) => {
-	  el.addEventListener('mouseenter', () => scramble(el, 300));
-	  el.addEventListener('mouseleave', () => {
-		if (el._raf) cancelAnimationFrame(el._raf);
-		if (el.dataset.text) el.textContent = el.dataset.text;
-		el._raf = null;
-	  });
+	// Optional: auto-close when crossing the breakpoint to desktop (prevents “slip”)
+	const mql = window.matchMedia('(max-width: 800px)');
+	mql.addEventListener('change', (ev) => {
+	  if (!ev.matches) close();
 	});
   })();
  
