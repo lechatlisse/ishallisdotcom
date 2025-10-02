@@ -2,18 +2,18 @@
    Core tokens
    ========================================================================== */
 :root{
-  --bg: #000;
-  --fg: #fff;
-  --accent: red;
+  --bg:#000;
+  --fg:#fff;
+  --accent:red;                 /* thin progress bar */
 
-  --gap: clamp(12px, 2vw, 28px);
-  --radius: 3px;
-  --header-h: 50px;
-  --nav-sweep: 0.4s;
+  --gap:clamp(12px,2vw,28px);
+  --radius:3px;                 /* card corners */
+  --header-h:50px;
+  --nav-sweep:.40s;             /* hover sweep duration */
 
-  --z-progress: 10100;
-  --z-header: 10050;
-  --z-overlay: 10000;
+  --z-progress:10100;
+  --z-header:10050;
+  --z-overlay:10000;
 }
 
 /* ==========================================================================
@@ -27,13 +27,13 @@ body{
   background:var(--bg);
   color:var(--fg);
   font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif;
-  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
 }
 img,video,svg,canvas{ display:block; max-width:100%; height:auto }
 a{ color:inherit; text-decoration:none }
 ::selection{ background:#000; color:#fff }
 
-/* Simple utility */
 .hidden{ display:none !important }
 
 /* ==========================================================================
@@ -51,7 +51,7 @@ a{ color:inherit; text-decoration:none }
   background:var(--accent);
   opacity:.9;
   transform-origin:left;
-  transform:scaleX(var(--progress, 0));
+  transform:scaleX(var(--progress,0));
   transition:transform .25s ease, opacity .35s ease .2s;
 }
 #progress.done{ opacity:0 }
@@ -59,143 +59,101 @@ a{ color:inherit; text-decoration:none }
 /* ==========================================================================
    Header (single instance, always above overlay)
    ========================================================================== */
-/* Fixed header, transparent, 40px side padding */
-   .site-header{
-     position: fixed; top: 0; left: 0; right: 0; z-index: var(--z-header);
-     padding: 12px 40px;
-     background: transparent !important;   /* absolutely no background */
-   }
-   
-   /* Row = 5 items on desktop with equal gaps end-to-end */
-   .nav-row{
-     display: flex; align-items: center; justify-content: space-between;
-   }
-   
-   /* Use one menu for both layouts */
-   .links{ display: contents; }             /* children act as direct flex items */
-   
-   .brand,
-   .nav-link,
-   .nav-toggle{
-     color: #fff;                           /* white text */
-     font-size: 16px;                       /* fixed size (no clamp) */
-     line-height: 1;
-     text-decoration: none;
-   }
-   
-   .brand{ font-weight: 400; padding: 8px 0; }
-   
+.site-header{
+  position:fixed; top:0; left:0; right:0;
+  z-index:var(--z-header);
+  padding:12px 40px;
+  background:transparent !important;
+}
+.nav-row{ display:flex; align-items:center; justify-content:space-between }
 
-   /* Links/brand share the same hit-area and layout behavior */
-   .nav-link, .brand{
-     display: inline-block;            /* gives us a reliable width */
-     position: relative;
-     overflow: hidden;                 /* clip sweep edges */
-     color:#fff;
-     font-size:16px; line-height:1; text-decoration:none;
-     transition: opacity .2s;
-   
-     /* bigger hit area without shifting layout */
-     --hit-x: 10px;
-     --hit-y: 6px;
-     padding: calc(8px + var(--hit-y)) var(--hit-x);
-     margin: calc(-1 * var(--hit-y)) calc(-1 * var(--hit-x));
-   }
-   .nav-link:hover, .brand:hover{ opacity:.75; }
-   
-   /* ===== HOVER SWEEP (clip-path) =====
-      Hidden at rest. On hover we reveal left→right.
-      No reverse on mouseout because only :hover sets a transition. */
-   .nav-link::before,
-   .brand::before{
-     content:"";
-     position:absolute; top:50%; left:50%;
-     height:5px;
-     width: calc(100% - (2 * var(--hit-x,10px)) + 14px); /* text width +14px */
-     background:#fdfed0;
-     border-radius:3px;
-     z-index:-1; pointer-events:none;
-   
-     /* fully hidden, but already positioned under the word */
-     clip-path: inset(0 100% 0 0);   /* hide the right side completely */
-     transform: translate(-50%, -50%);
-   }
-   
-   /* reveal left → right once; no reverse on mouseout */
-   .nav-link:not(.is-current):hover::before,
-   .brand:hover::before{
-     clip-path: inset(0 0 0 0);
-     transition: clip-path var(--nav-sweep) cubic-bezier(.7,0,.3,1);
-   }
-   
-   /* don’t run the hover sweep on the current item */
-   .nav-link.is-current::before{ display:none; }
-   
-   /* ===== CURRENT PAGE (static bar) ===== */
-   .nav-link.is-current{ z-index:0; }
-   .nav-link.is-current::after{
-     content:"";
-     position:absolute; left:50%; top:50%;
-     transform: translate(-50%, -50%);
-     height:5px;
-     width: calc(100% - (2 * var(--hit-x,10px)) + 14px); /* text width +14px */
-     background:#fdfed0;
-     border-radius:3px;
-     z-index:-1;
-   }
-   
-   /* Mobile panel: no sweep/active bars (optional) */
-   @media (max-width:800px){
-     .nav-link::before, .brand::before,
-     .nav-link.is-current::after{ display:none; }
-   }
-   
-   .menu-close{ display:none; }
-   
-   /* On small screens you can hide the indicator (menu has its own background) */
-   @media (max-width:800px){
-     .nav-link.is-current::after{ display:none; }
-   }
-   
-   /* “Menu” toggle (hidden on desktop) */
-   .nav-toggle{
-     display: none; border: 0; background: transparent; padding: 6px 0; cursor: pointer;
-   }
-  
-   
-   /* ============ Mobile ============ */
-   
-   @media (max-width: 800px){
-     /* brand stays; “Menu” appears at right */
-     .nav-toggle{ display: inline-block; margin-left: auto; }
-   
-     /* same .links becomes a right slide-out panel; only as tall as its content */
-     .links{
-       display: flex; flex-direction: column; gap: 10px;
-       position: fixed; top: 15px; right: 15px;    /* respects header padding */
-       width: max-content; min-width: 200px;
-       padding: 16px 22px;
-       background: #fdfed0;             /* panel has a background */
-       border-radius: 6px;
-       transform: translateX(120%);                /* off-canvas by default */
-       transition: transform .28s ease;
-     }
-     .nav-link{ color:#000; padding: 10px 2px; text-align: left; }
-     
-     .menu-close{
-       position:absolute; top:8px; right:8px;
-       width:34px; height:34px;          /* bigger hit target */
-       border:0; border-radius:6px;
-       background:rgba(0,0,0,.08);
-       color:#000; font-size:20px; line-height:34px; text-align:center;
-       cursor:pointer;
-     }
-   }
-   
-   /* Open state (toggled on <html>) */
-   .nav-open .links{ transform: translateX(0); }
-   .nav-open .nav-scrim{ display: block; opacity: 1; pointer-events: auto; }
-   .nav-open, .nav-open body{ overflow: hidden; }   /* lock page scroll while menu open */
+/* One menu for both desktop and mobile */
+.links{ display:contents }      /* desktop: children are direct flex items */
+
+.brand,.nav-link,.nav-toggle{
+  color:#fff;
+  font-size:16px;               /* fixed size; no auto scaling */
+  line-height:1;
+  text-decoration:none;
+}
+.brand{ font-weight:400; padding:8px 0 }
+
+/* Shared link styling + bigger hit-area (no layout shift) */
+.nav-link,.brand{
+  display:inline-block; position:relative; overflow:hidden;
+  transition:opacity .2s;
+  --hit-x:10px; --hit-y:6px;    /* tweak hit area */
+  padding:calc(8px + var(--hit-y)) var(--hit-x);
+  margin:calc(-1 * var(--hit-y)) calc(-1 * var(--hit-x));
+}
+.nav-link:hover,.brand:hover{ opacity:.75 }
+
+/* === Hover sweep (behind text, left→right; one-way) === */
+.nav-link::before,.brand::before{
+  content:"";
+  position:absolute; top:50%; left:50%;
+  height:5px;
+  width:calc(100% - (2 * var(--hit-x,10px)) + 14px); /* word width +14px */
+  background:#fdfed0; border-radius:3px;
+  z-index:-1; pointer-events:none;
+  clip-path:inset(0 100% 0 0);                 /* hidden at rest */
+  transform:translate(-50%,-50%);
+}
+.nav-link:not(.is-current):hover::before,
+.brand:hover::before{
+  clip-path:inset(0 0 0 0);
+  transition:clip-path var(--nav-sweep) cubic-bezier(.7,0,.3,1);
+}
+
+/* === Current page: static bar behind word === */
+.nav-link.is-current{ z-index:0 }
+.nav-link.is-current::before{ display:none }    /* no hover sweep on current */
+.nav-link.is-current::after{
+  content:"";
+  position:absolute; left:50%; top:50%;
+  transform:translate(-50%,-50%);
+  height:5px;
+  width:calc(100% - (2 * var(--hit-x,10px)) + 14px);
+  background:#fdfed0; border-radius:3px;
+  z-index:-1;
+}
+
+/* Toggle button (desktop hidden) */
+.nav-toggle{ display:none; border:0; background:transparent; padding:6px 0; cursor:pointer }
+.menu-close{ display:none !important; }
+
+/* ===== Mobile panel ===== */
+@media (max-width:800px){
+  .nav-toggle{ display:inline-block; margin-left:auto }
+
+  .links{
+    display:flex; flex-direction:column; gap:10px;
+    position:fixed; top:15px; right:15px;
+    width:max-content; min-width:200px;
+    padding:16px 22px;
+    background:#fdfed0; border-radius:6px;
+    transform:translateX(120%); transition:transform .28s ease;
+  }
+  .nav-link{ color:#000; padding:10px 2px; text-align:left }
+  .nav-link::before,.brand::before,
+  .nav-link.is-current::after{ display:none }    /* no bars in panel */
+
+  .menu-close{
+    display:inline-flex;                 /* show only on mobile */
+    align-items:center; justify-content:center;
+    position:absolute; top:8px; right:8px;
+    width:34px; height:34px;
+    border:0; border-radius:6px;
+    background:rgba(0,0,0,.08);
+    color:#000; font-size:20px; line-height:1;
+    cursor:pointer;
+  }
+  .menu-close:hover{ background:rgba(0,0,0,.14) }
+}
+
+/* Panel open (toggled on <html>) */
+.nav-open .links{ transform:translateX(0) }
+.nav-open,.nav-open body{ overflow:hidden }     /* lock page scroll while open */
 
 /* ==========================================================================
    Main content + fade-in (JS removes .fade)
@@ -215,8 +173,7 @@ a{ color:inherit; text-decoration:none }
 .project > :is(video,img,iframe){
   position:absolute; inset:0;
   width:100%; height:100%;
-  object-fit:cover; border:0;
-  background:#000;
+  object-fit:cover; border:0; background:#000;
 }
 
 /* Hero (non-clickable) spacing */
@@ -236,7 +193,7 @@ a{ color:inherit; text-decoration:none }
 .projects .grid > a.project:nth-child(3n){ grid-column:1 / -1 }
 
 /* Aspect-ratio fallback for very old browsers */
-@supports not (aspect-ratio: 1/1){
+@supports not (aspect-ratio:1/1){
   .project::before{ content:""; display:block; padding-top:56.25% }
   .project > :is(video,img,iframe){ position:absolute }
 }
@@ -245,7 +202,7 @@ a{ color:inherit; text-decoration:none }
 .project .overlay{
   position:absolute; inset:0;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
-  text-align:center; color:#fff; padding:clamp(8px, 2vw, 24px);
+  text-align:center; color:#fff; padding:clamp(8px,2vw,24px);
   pointer-events:none;
 }
 .project .title{
@@ -264,10 +221,10 @@ a{ color:inherit; text-decoration:none }
   font-size:clamp(.8rem, 1.2vw + .2rem, 1.05rem);
   margin:.15em 0; opacity:.9;
 }
-.project .subtitle:empty, .project .caption:empty{ display:none }
+.project .subtitle:empty,.project .caption:empty{ display:none }
 
 /* Responsive single column */
-@media (max-width: 660px){
+@media (max-width:660px){
   .projects .grid{ grid-template-columns:1fr }
   .projects .grid > a.project{ grid-column:1 / -1 }
 }
@@ -285,8 +242,8 @@ a{ color:inherit; text-decoration:none }
 
 /* Close button aligned below header line */
 #player .player-close{
-  position:absolute; top:calc(var(--header-h) + 12px); right:16px; 
-  z-index: 20;
+  position:absolute; top:calc(var(--header-h) + 12px); right:16px;
+  z-index:20;
   width:40px; height:40px; line-height:40px; text-align:center;
   border:0; border-radius:999px; cursor:pointer;
   background:rgba(0,0,0,.5); color:#fff; font-size:20px;
@@ -294,168 +251,90 @@ a{ color:inherit; text-decoration:none }
 }
 
 /* Lock page scroll while overlay is open */
-html.modal-open, body.modal-open{ overflow:hidden }
+html.modal-open,body.modal-open{ overflow:hidden }
 
-/* ============================================================
+/* ==========================================================================
    PLYR: overlay + project pages (viewport-pinned controls)
-   ============================================================ */
-
-/* Optional theme knobs (tweak freely) */
+   ========================================================================== */
 .plyr{
-  position: absolute; inset: 0;
-  /* Primary accent (progress, focus, etc.) */
-  --plyr-color-main: #fdfed0;
+  position:absolute; inset:0;
+  --plyr-color-main:#fdfed0;
 
-  /* Subtle sizing tweaks (comment out if you like Plyr defaults) */
-  --plyr-control-spacing: 10px;
-  --plyr-control-padding: 6px;
-  --plyr-range-track-height: 10px;
-  --plyr-range-thumb-height: 12px;
-  --plyr-range-thumb-width: 12px;
-  
-  /* optional: buffer/background tints to taste */
-  --plyr-video-progress-buffered-background: rgba(253,254,208,.5);
-  --plyr-video-range-track-background: rgba(255,255,255,.1);
+  /* subtle sizing tweaks (optional) */
+  --plyr-control-spacing:10px;
+  --plyr-control-padding:6px;
+  --plyr-range-track-height:10px;
+  --plyr-range-thumb-height:12px;
+  --plyr-range-thumb-width:12px;
+
+  --plyr-video-progress-buffered-background:rgba(253,254,208,.5);
+  --plyr-video-range-track-background:rgba(255,255,255,.1);
 }
 
 .plyr .poster-veil{
-  position: absolute; inset: 0;
-  background-position: center center;
-  background-size: cover; background-repeat: no-repeat;
-  opacity: 1; transition: opacity 1s ease;
-  pointer-events: none;
-  z-index: 1;
+  position:absolute; inset:0;
+  background-position:center; background-size:cover; background-repeat:no-repeat;
+  opacity:1; transition:opacity 1s ease;
+  pointer-events:none; z-index:1;
 }
 
-/* Controls container rounding (overlay + project pages) */
-.plyr__controls{ 
-  qqqborder-radius: 2px !important; 
-  position: relative; 
-  z-index: 3; 
-}
+/* Controls layer above poster */
+.plyr__controls{ position:relative; z-index:3 }
+.plyr__time{ font-weight:bold }
 
-.plyr__time {
-  font-weight: bold;
-}
-
-/* Progress track rounding (wrapper + buffer + range) */
-/* Target all Plyr progress bars */
+/* Progress shapes (square) */
 .plyr__progress,
 .plyr__progress input[type=range],
 .plyr__progress progress,
-.plyr__progress__buffer {
-  border-radius: 0 !important; /* remove rounding */
-  -webkit-border-radius: 0 !important;
-  -moz-border-radius: 0 !important;
-  background-clip: padding-box;
+.plyr__progress__buffer{
+  border-radius:0 !important; background-clip:padding-box;
 }
+.plyr__progress input[type="range"]::-webkit-slider-runnable-track{ height:var(--plyr-range-track-height) !important; border-radius:0 !important }
+.plyr__progress input[type="range"]::-moz-range-track{ border-radius:0 !important }
+.plyr__progress input[type="range"]::-ms-track{ border-radius:0 !important }
 
-/* Make sure the WebKit track matches thickness */
-.plyr__progress input[type="range"]::-webkit-slider-runnable-track{
-  height: var(--plyr-range-track-height) !important;
-  border-radius: 2px !important;
-}
+/* Remove diagonal buffering stripes + spinner */
+.plyr__progress__buffer{ background:rgba(255,255,255,.25) !important; background-image:none !important; animation:none !important; border-radius:0 !important }
+.plyr__spinner{ display:none !important }
 
-/* ===== Plyr: remove diagonal buffering stripes ===== */
-.plyr__progress__buffer {
-  background: rgba(255,255,255,.25) !important; /* flat semi-transparent fill */
-  background-image: none !important;            /* kill diagonal stripes */
-  animation: none !important;                   /* stop the moving stripes */
-}
-
-/* ===== Plyr: remove big loading spinner ===== */
-.plyr__spinner {
-  display: none !important;
-}
-
-/* HIDE the scrubber knob (the white dot) — all engines */
-.plyr--full-ui .plyr__progress input[type="range"]{
-  -webkit-appearance:none; appearance:none;
-  background: transparent; /* Plyr paints the bar; this keeps the input ‘invisible’ */
-}
-.plyr--full-ui .plyr__progress input[type="range"]::-webkit-slider-thumb{
-  -webkit-appearance:none; appearance:none;
-  width:0 !important; height:0 !important;
-  background:transparent !important; border:0 !important; box-shadow:none !important;
-}
-.plyr--full-ui .plyr__progress input[type="range"]::-moz-range-thumb{
-  width:0 !important; height:0 !important;
-  background:transparent !important; border:0 !important; box-shadow:none !important;
-}
+/* Hide scrubber knob */
+.plyr--full-ui .plyr__progress input[type="range"]{ -webkit-appearance:none; appearance:none; background:transparent }
+.plyr--full-ui .plyr__progress input[type="range"]::-webkit-slider-thumb,
+.plyr--full-ui .plyr__progress input[type="range"]::-moz-range-thumb,
 .plyr--full-ui .plyr__progress input[type="range"]::-ms-thumb{
-  width:0 !important; height:0 !important;
-  background:transparent !important; border:0 !important; box-shadow:none !important;
+  width:0 !important; height:0 !important; background:transparent !important; border:0 !important; box-shadow:none !important;
 }
 
 /* Hide tooltip entirely */
-.plyr__tooltip{ display:none !important; }
+.plyr__tooltip{ display:none !important }
 
-/* ========== Overlay ========== */
-/* Keep your existing wrapper, but ensure it's the clipping viewport */
-#player .player-wrap{ position:absolute; inset:0; overflow:hidden; }
-
-/* Let Plyr fill that viewport-sized wrapper */
-#player .player-wrap .plyr{ position:absolute; inset:0; }
-
-/* Overscan the video plane to cover, but keep controls in-bounds
-   (controls are positioned relative to the .plyr viewport wrapper) */
+/* ===== Overlay variant ===== */
+#player .player-wrap{ overflow:hidden }
+#player .player-wrap .plyr{ position:absolute; inset:0 }
 #player .player-wrap .plyr__video-embed{
   position:absolute; top:50%; left:50%;
   width:max(100vw, calc(100dvh * 16 / 9));
   height:max(100dvh, calc(100vw * 9 / 16));
-  transform:translate(-50%, -50%);
-  z-index: 1;
+  transform:translate(-50%,-50%);
+  z-index:1;
 }
+#player .player-wrap .plyr__controls{ padding:clamp(8px,1.6vw,14px) }
 
-/* Pad controls a touch so they never hug the edges */
-#player .player-wrap .plyr__controls{
-  padding: clamp(8px, 1.6vw, 14px);
-}
-
-/* Ensure controls render above the poster layer */
-.plyr__controls{ position:relative; z-index:3; }
-
-/* Use Plyr's built-in poster layer; make it cover and fade nicely */
+/* Built-in poster layer polish */
 .plyr__poster{
-  background-position: center !important;
-  background-size: cover !important;
-  background-repeat: no-repeat !important;
-  opacity: 1;
-  transition: opacity .5s ease;
+  background-position:center !important;
+  background-size:cover !important;
+  background-repeat:no-repeat !important;
+  opacity:1; transition:opacity .5s ease;
 }
 
-/* --- Square off the BUFFER bar completely (Plyr uses <progress>) --- */
-.plyr__progress progress {
-  border-radius: 0 !important;
-  overflow: hidden;                 /* clip any residual rounding */
-}
-
-/* WebKit (Chrome/Safari) */
+/* Square the <progress> element fully (engine quirks) */
+.plyr__progress progress{ border-radius:0 !important; overflow:hidden }
 .plyr__progress progress::-webkit-progress-bar,
-.plyr__progress progress::-webkit-progress-value {
-  border-radius: 0 !important;
-}
+.plyr__progress progress::-webkit-progress-value{ border-radius:0 !important }
+.plyr__progress progress::-moz-progress-bar{ border-radius:0 !important }
 
-/* Firefox */
-.plyr__progress progress::-moz-progress-bar {
-  border-radius: 0 !important;
-}
-
-/* --- Also square the PLAYED track (range track) in all engines --- */
-.plyr__progress input[type="range"]::-webkit-slider-runnable-track { border-radius: 0 !important; }
-.plyr__progress input[type="range"]::-moz-range-track                { border-radius: 0 !important; }
-.plyr__progress input[type="range"]::-ms-track                       { border-radius: 0 !important; }
-
-/* Ensure Plyr’s own buffer helper class isn’t re-rounding */
-.plyr__progress__buffer { border-radius: 0 !important; }
-
-/* ========== Project pages ========== */
-/* Your 16:9 stage */
-.project-page .video-embed{ position:relative; aspect-ratio:16/9; background:#000; }
-
-/* Plyr fills that stage */
-.project-page .video-embed .plyr{ position:absolute; inset:0; }
-
-/* Vimeo plane sits inside the stage (no overscan here) */
-.project-page .video-embed .plyr__video-embed{ position:absolute; inset:0; z-index: 1; }
-
+/* ===== Project page variant ===== */
+.project-page .video-embed{ position:relative; aspect-ratio:16/9; background:#000 }
+.project-page .video-embed .plyr{ position:absolute; inset:0 }
+.project-page .video-embed .plyr__video-embed{ position:absolute; inset:0; z-index:1 }
