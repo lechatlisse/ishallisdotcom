@@ -9,7 +9,7 @@
   --gap:clamp(12px,2vw,28px);
   --radius:3px;                 /* card corners */
   --header-h:50px;
-  --nav-sweep:.40s;             /* hover sweep duration */
+  --nav-sweep:.25s;             /* hover sweep duration */
 
   --z-progress:10100;
   --z-header:10050;
@@ -176,8 +176,12 @@ a{ color:inherit; text-decoration:none }
   object-fit:cover; border:0; background:#000;
 }
 
-/* Hero (non-clickable) spacing */
-.project.hero-tile{ margin-bottom:var(--gap) }
+/* Hero (non-clickable) spacing + height cap */
+.project.hero-tile{ 
+  margin-bottom:var(--gap);
+  max-height:80vh;
+  width:100%; /* Force full width */
+}
 
 /* ==========================================================================
    Projects grid (2–1–2–1 cadence)
@@ -313,8 +317,8 @@ html.modal-open,body.modal-open{ overflow:hidden }
 #player .player-wrap .plyr{ position:absolute; inset:0 }
 #player .player-wrap .plyr__video-embed{
   position:absolute; top:50%; left:50%;
-  width:max(100vw, calc(100dvh * 16 / 9));
-  height:max(100dvh, calc(100vw * 9 / 16));
+  width:max(100vw, calc(100vh * 16 / 9));
+  height:max(100vh, calc(100vw * 9 / 16));
   transform:translate(-50%,-50%);
   z-index:1;
 }
