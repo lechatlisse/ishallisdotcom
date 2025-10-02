@@ -9,7 +9,7 @@
   --gap:clamp(12px,2vw,28px);
   --radius:3px;                 /* card corners */
   --header-h:50px;
-  --nav-sweep:.25s;             /* hover sweep duration */
+  --nav-sweep:.2s;             /* hover sweep duration */
 
   --z-progress:10100;
   --z-header:10050;
@@ -86,7 +86,6 @@ a{ color:inherit; text-decoration:none }
   padding:calc(8px + var(--hit-y)) var(--hit-x);
   margin:calc(-1 * var(--hit-y)) calc(-1 * var(--hit-x));
 }
-.nav-link:hover,.brand:hover{ opacity:.75 }
 
 /* === Hover sweep (behind text, left→right; one-way) === */
 .nav-link::before,.brand::before{

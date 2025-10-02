@@ -31,6 +31,8 @@
 
   <!-- Performance: warm the video stack -->
   <link rel="preconnect" href="https://player.vimeo.com" crossorigin>
+  <link rel="dns-prefetch" href="https://i.vimeocdn.com">
+  <link rel="dns-prefetch" href="https://f.vimeocdn.com">
 
   <!-- Optional: Preload first hero video for fast LCP (swap URL to your preferred source) -->
   <link rel="preload" as="video" crossorigin
@@ -89,7 +91,7 @@
 	  <div class="grid">
 
 		<!-- Example tile: replace slug + vimeo id + poster as needed -->
-		<a class="project tile" href="/work/between-the-years/" data-vimeo="469961565">
+		<a class="project tile" href="/work/between-the-years/" data-vimeo="1122262282">
 		  <video muted loop playsinline preload="metadata" crossorigin="anonymous" poster="/img/hero-fallback.jpg">
 			<source
 			  src="https://player.vimeo.com/progressive_redirect/playback/803264413/rendition/720p/file.mp4?loc=external&log_user=0&signature=85264d735fba9dfa217e1b5e7b25c65cb5d9dd70621057f7b35de89996611d28"

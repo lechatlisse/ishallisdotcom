@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Between Two Years — Ismail Shallis</title>
+  <meta name="description" content="Short logline / description for this piece.">
+  <link rel="canonical" href="https://lechatlisse.github.io/ishallisdotcom/work/between-two-years/">
+
+  <!-- Social -->
+  <meta property="og:type" content="video.other">
+  <meta property="og:title" content="Between Two Years — Ismail Shallis">
+  <meta property="og:description" content="Short logline / description for this piece.">
+  <meta property="og:url" content="https://lechatlisse.github.io/ishallisdotcom/work/between-two-years/">
+  <meta property="og:image" content="https://lechatlisse.github.io/ishallisdotcom/img/between-two-years-og.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Between Two Years — Ismail Shallis">
+  <meta name="twitter:description" content="Short logline / description for this piece.">
+  <meta name="twitter:image" content="https://lechatlisse.github.io/ishallisdotcom/img/between-two-years-og.jpg">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- CSS (use relative paths unless you need a subfolder prefix) -->
+  <link rel="stylesheet" href="/css/modern-normalize.min.css">
+  <link rel="stylesheet" href="/css/main.css">
+
+  <!-- Connection hints for faster video -->
+  <link rel="preconnect" href="https://player.vimeo.com" crossorigin>
+  <link rel="preconnect" href="https://i.vimeocdn.com" crossorigin>
+  <link rel="preconnect" href="https://f.vimeocdn.com" crossorigin>
+
+  <!-- Optional warmups (speeds up first play) -->
+  <!-- <link rel="preload" as="script" href="../js/plyr.min.js"> -->
+  <!-- <script defer src="https://player.vimeo.com/api/player.js"></script> -->
+  <script src="/js/lenis.min.js" defer></script>
+</head>
+<body>
+
+  <!-- Same header/nav structure the CSS expects -->
+  <header class="site-header">
+	<nav class="nav-row">
+	  <a class="brand" href="/">Ismail Shallis</a>
+
+	  <button class="nav-toggle" data-nav-toggle>Menu</button>
+
+	  <div class="links" data-links>
+		<button class="menu-close" data-nav-close aria-label="Close">×</button>
+		<a class="nav-link is-current" href="/">Work</a>
+		<a class="nav-link" href="/info/">Info</a>
+		<a class="nav-link" href="https://instagram.com/" target="_blank" rel="noopener">Instagram</a>
+		<a class="nav-link" href="/archive/">Archive</a>
+	  </div>
+	</nav>
+  </header>
+
+  <!-- (Optional) progress bar element; harmless if left out -->
+  <div id="progress"></div>
+
+  <main class="project-page" style="padding-top: var(--header-h, 50px);">
+	<!-- This hook is what app.js looks for -->
+	<div class="video-embed"
+		 data-vimeo="469961565"
+		 data-poster="/img/between-two-years-poster.jpg"></div>
+  </main>
+
+  <!-- Load your site JS; it will pull Plyr and build the player -->
+  <script src="/js/app.js" defer></script>
+</body>
+</html>
